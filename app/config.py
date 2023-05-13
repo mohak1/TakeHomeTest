@@ -6,7 +6,7 @@ import datetime
 
 # TODO: replace column name string values with ENUMs
 
-URL = ''
+URL = 'http://www.fifeweather.co.uk/cowdenbeath/200606.csv'
 OUTPUT_DIR = ''
 T1_FILE_NAME = ''
 T2_FILE_NAME = ''
