@@ -1,3 +1,6 @@
+## Work in progress ##
+# This file contains scattered ideas that need to be structured #
+
 TODO: change the README from .txt to .md
 TODO: add the sections:
     - how to run
@@ -18,6 +21,13 @@ project structure:
     `requirements.txt` outside the `app` folder to keep things organised
 - using `config.py` for storing all the constants like URL, etc
 
+Reasoning for file names as arguments:
+Writing the files with "a" mode appends the new content at the end of
+the file. Hence if the stript is run in a loop over multiple URLs, the
+output directory will contain 3 files with the result of all the URLs
+processed. This is unlikey to be the intended behaviour.
+Hence it is essential to have a way of specifying file names without
+altering the code when running the script for more than one URL
 
 ========================================================================
 -> Pandas dataframes?
@@ -63,6 +73,17 @@ NOTES:
                 if is_in_valid_range(col_name, col_temp):
                     # write to file
         ```
+# assumption: dates in the input files will be in DD/MM/YYYY format
+
+NOTE: think about this after all the tasks are done
+# the argparse can be changed to allow values to be passed in that will
+    be used for this task. For example, if we want to perform task2
+    operation if "colA" value is in range (0, 2) or "colB" value is in
+    range (3, 5) or "colC" value is in range (6, 8):
+    --t2-colname-temp colA,0,2; colB,3,5; colC,6,8
+    this way, no alterations in the code is needed to change the column
+    names or their temperature ranges. Also, this way the check is not
+    restricted to 2 columns
 ========================================================================
 Task3:
 - use the "date" and "outside temperature" column values
@@ -77,4 +98,6 @@ NOTES:
     - read up on normal distribution and explore if a better approach
         exists; since it is not guaranteed that June temperature values
         will follow a normal distribution
+
+NOTE: replace the value of col_name, avg_temp and num_days with argparse
 ========================================================================
