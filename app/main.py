@@ -159,7 +159,13 @@ if __name__ == '__main__':
     # endregion
 
     args = parser.parse_args()
-    # TODO: add validators for command line args
-    # prepare value dict and pass it to main() or test
 
-    main()
+    if args.run_tests:
+        loader = unittest.TestLoader()
+        suite = loader.discover(start_dir='app/tests')
+        runner = unittest.TextTestRunner()
+        runner.run(suite)
+    else:
+        # TODO: add validators for command line args
+        # prepare value dict and pass it to main()
+        main()
