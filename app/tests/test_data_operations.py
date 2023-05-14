@@ -3,7 +3,6 @@
 import datetime
 import unittest
 
-import config
 import custom_exceptions as ce
 import data_operations as data_op
 import pandas as pd
@@ -264,7 +263,7 @@ class TestValidator(unittest.TestCase):
                 ('17.2', '01/06/2006'), ('15.5', '31/05/2006')],
         )
         result = data_op.formatted_task_1_results(
-            input_data, config.T1_COUNT_OF_TOP_HOTTEST_DAYS
+            input_data, 10
         )
         self.assertEqual(result, expected)
 
@@ -277,5 +276,5 @@ class TestValidator(unittest.TestCase):
         }
         with self.assertRaises(ce.InvalidFormatError):
             data_op.formatted_task_1_results(
-                input_data, config.T1_COUNT_OF_TOP_HOTTEST_DAYS
+                input_data, 10
             )
