@@ -3,6 +3,7 @@
 import datetime
 import unittest
 
+import config
 import custom_exceptions as ce
 import data_operations as data_op
 import pandas as pd
@@ -248,3 +249,33 @@ class TestValidator(unittest.TestCase):
         )
         data_op.remove_rows_where_data_is_na(input_with_no_none_vals)
         assert_frame_equal(input_with_no_none_vals, expected_df_when_no_none_vals)
+
+    def test_formatted_task_1_results_no_error_raised(self):
+        input_data = {
+            '31/05/2006': {'time': datetime.time(14, 40), 'temp': 15.5},
+            '01/06/2006': {'time': datetime.time(15, 0), 'temp': 17.2},
+            '02/06/2006': {'time': datetime.time(13, 20), 'temp': 17.7},
+            '03/06/2006': {'time': datetime.time(14, 50), 'temp': 19.6},
+        }
+        expected = (
+            [('05/2006', '14:40'), ('06/2006', '14:30')],
+            '14:40',
+            [('19.6', '03/06/2006'), ('17.7', '02/06/2006'),
+                ('17.2', '01/06/2006'), ('15.5', '31/05/2006')],
+        )
+        result = data_op.formatted_task_1_results(
+            input_data, config.T1_COUNT_OF_TOP_HOTTEST_DAYS
+        )
+        self.assertEqual(result, expected)
+
+    def test_formatted_task_1_results_error_raised(self):
+        input_data = {
+            '31/05/2006': {'time': datetime.time(14, 40), 'temp': 15.5},
+            '01/06/2006': [datetime.time(15, 0), 17.2],
+            '02/06/2006': {'time': datetime.time(13, 20), '123': 17.7},
+            '03/06/2006': {'abc': datetime.time(14, 50), 'temp': 19.6},
+        }
+        with self.assertRaises(ce.InvalidFormatError):
+            data_op.formatted_task_1_results(
+                input_data, config.T1_COUNT_OF_TOP_HOTTEST_DAYS
+            )
