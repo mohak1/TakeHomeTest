@@ -10,6 +10,7 @@ from collections import deque
 import config
 import pandas as pd
 import requests
+import custom_exceptions as ce
 
 logger = logging.getLogger(__name__)
 
@@ -35,8 +36,11 @@ def get_data_chunk(url: str) -> pd.DataFrame:
     chunks from the stream and converts them to the CSV format
     Converts the CSV chunk to a Pandas DataFrame and yields it
 
-    Returns an empty Pandas DataFrame object if an error occurs in
-    fetching the data from the passed URL
+    Raises `DataFetchError` if an error is encountered in fetching the
+    data from the provided URL
+
+    Raises `DataLoadingError` if the fetched data cannot be read as CSV
+    of cannot be loaded as a Pandas DataFrame
 
     Args:
         url (str): The URL to retrieve the data from
@@ -47,26 +51,41 @@ def get_data_chunk(url: str) -> pd.DataFrame:
     try:
         data_stream = get_data_stream(url)
     except requests.exceptions.RequestException as err:
-        # TODO: mention the supressed requests error in logs
-        logger.error("Error occurred during data download: %s", str(err))
-        return pd.DataFrame()
+        raise ce.DataFetchError(
+            'Encountered an issue in fetching data from the URL\n'
+            f'Make sure `{url}` is a valid url and supports GET request'
+            f'\nTraceback: \n {err}'
+        )
 
     reader = csv.reader(data_stream.iter_lines(
         chunk_size=config.CHUNK_SIZE, decode_unicode=True)
     )
     rows = deque([]) # popleft() is O(1) in deque; in list pop(0) is O(N)
     col_names = []
-    for row in reader:
-        rows.append(row)
-        if len(rows) == config.CHUNK_SIZE:
+    try:
+        for row in reader:
+            rows.append(row)
+            if len(rows) == config.CHUNK_SIZE:
+                if not col_names:
+                    # first row of the CSV contains column names, not data
+                    # removing first row so it doesnt get added as data row
+                    col_names = rows[0]
+                    rows.popleft()
+                dframe = pd.DataFrame(columns=col_names, data=rows)
+                rows = []
+                yield dframe
+        if rows:
+            # if data is smaller than chunk size
             if not col_names:
-                # first row of the CSV contains the column names
+                # first row of the CSV contains column names, not data
                 # removing first row so it doesnt get added as data row
                 col_names = rows[0]
                 rows.popleft()
             dframe = pd.DataFrame(columns=col_names, data=rows)
-            rows = []
             yield dframe
-    if rows:
-        dframe = pd.DataFrame(columns=col_names, data=rows)
-        yield dframe
+    except (csv.Error, ValueError) as err:
+        raise ce.DataLoadingError(
+            'Encountered an issue in loading the fetched data \n'
+            f'Make sure the data being fetched is a valid CSV \n'
+            f'Traceback: \n {err}'
+        )
