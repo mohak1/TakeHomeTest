@@ -46,12 +46,12 @@ def main() -> None:
     previous operations in order to ensure the correctness of the result
     until all the chunks are processed.
 
-    Finally, the results are written to a file on the disk
+    The results are written to a file on the disk
     """
     # output dictionaries for tracking the output of tasks
     task_1_output = {}
 
-    for data_chunk in data_f.get_data_chunk():
+    for data_chunk in data_f.get_data_chunk(config.URL):
         data_op.transform_data(data_chunk) # TODO: Raise/suppress exceptions
         tasks.perform_task_1(data_chunk, task_1_output)
 
@@ -81,29 +81,29 @@ if __name__ == '__main__':
     )
     # output directory
     parser.add_argument(
-        '--output-dir',
+        '--output_dir',
         type=str,
         help='Full path where the output files are to be saved'
     )
     # output file names
     parser.add_argument(
-        '--t1-file-name',
+        '--t1_file_name',
         type=str,
         help='Name of the file that contains result of Task 1'
     )
     parser.add_argument(
-        '--t2-file-name',
+        '--t2_file_name',
         type=str,
         help='Name of the file that contains result of Task 2'
     )
     parser.add_argument(
-        '--t3-file-name',
+        '--t3_file_name',
         type=str,
         help='Name of the file that contains result of Task 3'
     )
     # for running the tests
     parser.add_argument(
-        '--run-tests',
+        '--run_tests',
         action='store_true',
         help='Runs unit tests in the tests directory'
     )
@@ -113,7 +113,7 @@ if __name__ == '__main__':
     # column name
     # TODO: add validation -> should be in EXPECTED_COL_NAMES
     parser.add_argument(
-        '--t1-col-name',
+        '--t1_col_name',
         type=str,
         help='Name of the column on which Task 1 is to be performed'
     )
@@ -123,14 +123,14 @@ if __name__ == '__main__':
     # start date
     # TODO: add validation -> should be a valid date
     parser.add_argument(
-        '--t2-start-date',
+        '--t2_start_date',
         type=str,
         help='Date from which Task 2 starts the check'
     )
     # end date
     # TODO: add validation -> should be a valid date
     parser.add_argument(
-        '--t2-end-date',
+        '--t2_end_date',
         type=str,
         help='Date after which Task 2 stops the check'
     )
@@ -140,20 +140,21 @@ if __name__ == '__main__':
     # column name
     # TODO: add validation -> should be in EXPECTED_COL_NAMES
     parser.add_argument(
-        '--t3-col-name',
+        '--t3_col_name',
         type=str,
         help='Name of the column which is to be forecasted in Task 3'
     )
     # forecast days
     # TODO: add validation -> should be less than 31
     parser.add_argument(
-        '--t3-num-days',
+        '--t3_num_days',
         type=str,
         help='Number of days to forecast of the next month'
     )
     # endregion
 
     args = parser.parse_args()
-    # validate the args
-    # prepare value dict and pass it to main()
+    # TODO: add validators for command line args
+    # prepare value dict and pass it to main() or test
+
     main()
