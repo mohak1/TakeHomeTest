@@ -1,5 +1,5 @@
-## Work in progress ##
-# This file contains scattered ideas that need to be structured #
+## Work in progress ##
+# This file contains scattered ideas that need to be structured #
 
 TODO: change the README from .txt to .md
 TODO: add the sections:
@@ -30,8 +30,13 @@ Hence it is essential to have a way of specifying file names without
 altering the code when running the script for more than one URL
 
 ========================================================================
--> Pandas dataframes?
--> return iterators of data chunks?
+-> Why Pandas dataframes?
+Using pandas dataframes for performing the operations on the CSV
+data. While Pandas can be a bit tricky to work with, since the dataframe
+objects are passed by reference and a lot of the operations are inplace,
+is really fast due to its CPython implementation. Hence, it can help in
+achieving massive performance gains specially on large datasets
+
 ========================================================================
 Convert the Date column values to a datetime object and check for day
 and month values
@@ -47,9 +52,9 @@ NOTE: read the column names (i.e. "date", "outside temperature") from
     config.py; maybe also allow it to be changed from the
     arguments (?)
 
-# assumption: storing info of each day in a dict assuming that num days
+# assumption: storing info of each day in a dict assuming that num days
 are not large enough to cause MemoryError
-# can be handled by saving the daily average/hottest info to disk
+# can be handled by saving the daily average/hottest info to disk
     after processing x num of years or x num of rows hence clearing the
     memory; then reading these files one at a time for generating the
     final answer; implementing this approach in the current solution
@@ -73,7 +78,7 @@ NOTES:
                 if is_in_valid_range(col_name, col_temp):
                     # write to file
         ```
-# assumption: dates in the input files will be in DD/MM/YYYY format
+# assumption: dates in the input files will be in DD/MM/YYYY format
 
 NOTE: think about this after all the tasks are done
 # the argparse can be changed to allow values to be passed in that will
@@ -101,3 +106,4 @@ NOTES:
 
 NOTE: replace the value of col_name, avg_temp and num_days with argparse
 ========================================================================
+
