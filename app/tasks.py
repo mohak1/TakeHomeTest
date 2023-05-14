@@ -38,7 +38,7 @@ def perform_task_1(data: pd.DataFrame, col_name, result: ty.Dict) -> None:
     """
     # gather all unique dates
     unique_dates = data['Date'].unique()
-    # for each date, get the max outside temp and the associted time
+    # for each date, get the max value for `col_name` and the associted time
     for date_ in unique_dates:
         temp_and_time_on_date = data.loc[
             data['Date']==date_, (col_name, 'Time')
