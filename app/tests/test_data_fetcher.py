@@ -37,10 +37,14 @@ class TestDataChunk(unittest.TestCase):
         with self.assertRaises(ce.DataFetchError):
             list(data_f.get_data_chunk('url'))
 
+    @patch('validator.check_for_expected_columns')
     @patch('data_fetcher.get_data_stream')
-    def test_successful_data_chunk(self, mock_get_data_stream):
+    def test_successful_data_chunk(
+        self, mock_get_data_stream, mock_check_for_expected_columns
+    ):
         mock_data_stream = MockValidDataStream()
         mock_get_data_stream.return_value = mock_data_stream
+        mock_check_for_expected_columns.return_value = None
         expected = pd.DataFrame(
             columns=['c1', 'c2', 'c3', 'c4'],
             data=[['d1', 'd2', 'd3', 'd4'], ['d1', 'd2', 'd3', 'd4']]
@@ -49,18 +53,33 @@ class TestDataChunk(unittest.TestCase):
         self.assertEqual(len(result), 1)
         self.assertTrue(result[0].equals(expected))
 
+    @patch('validator.check_for_expected_columns')
     @patch('data_fetcher.get_data_stream')
-    def test_value_error(self, mock_get_data_stream):
+    def test_value_error(
+        self, mock_get_data_stream, mock_check_for_expected_columns
+    ):
         mock_data_stream = MockInValidDataStream()
         mock_get_data_stream.return_value = mock_data_stream
+        mock_check_for_expected_columns.return_value = None
+        with self.assertRaises(ce.DataLoadingError):
+            list(data_f.get_data_chunk('url'))
+
+    @patch('validator.check_for_expected_columns')
+    @patch('data_fetcher.get_data_stream')
+    def test_csv_error(
+        self, mock_get_data_stream, mock_check_for_expected_columns
+    ):
+        mock_data_stream = MockInValidCSVDataStream()
+        mock_get_data_stream.return_value = mock_data_stream
+        mock_check_for_expected_columns.return_value = None
         with self.assertRaises(ce.DataLoadingError):
             list(data_f.get_data_chunk('url'))
 
     @patch('data_fetcher.get_data_stream')
-    def test_csv_error(self, mock_get_data_stream):
-        mock_data_stream = MockInValidCSVDataStream()
+    def test_validation_error(self, mock_get_data_stream):
+        mock_data_stream = MockValidDataStream()
         mock_get_data_stream.return_value = mock_data_stream
-        with self.assertRaises(ce.DataLoadingError):
+        with self.assertRaises(ce.ValidationError):
             list(data_f.get_data_chunk('url'))
 
 # pylint: disable=unused-argument
