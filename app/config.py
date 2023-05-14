@@ -8,8 +8,8 @@ import datetime
 
 URL = 'http://www.fifeweather.co.uk/cowdenbeath/200606.csv'
 CHUNK_SIZE = 1024
-OUTPUT_DIR = ''
-T1_FILE_NAME = ''
+OUTPUT_DIR = './output'
+T1_FILE_NAME = 'task1.txt'
 T2_FILE_NAME = ''
 T3_FILE_NAME = ''
 
@@ -26,6 +26,7 @@ NUMERIC_COL_NAMES = [
 
 # constants used for Task 1
 T1_COL_NAME = 'Outside Temperature'
+T1_COUNT_OF_TOP_HOTTEST_DAYS = 10
 
 # constants used for Task 2
 T2_START_DATE = datetime.datetime.strptime('01/06/2006', '%d/%m/%Y')
