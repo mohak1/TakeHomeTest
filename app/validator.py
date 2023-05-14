@@ -10,17 +10,14 @@ import config
 import custom_exceptions as ce
 
 
-def check_command_line_args() -> None:
-    raise NotImplementedError
-
 def check_task_1_dict_format(task_1_output: ty.Dict) -> None:
     """
     Task 1 output is a dictionary of dictionaries where each element of
     the dictionary is of the format:
-        string_object: {
-            'temp': int,
-            'time': datetime_object,
-            }
+        {
+            '01/06/2006': {'temp': 17.2, 'time': datetime.time(15, 0)},
+            '01/07/2006': {'temp': 16.0, 'time': datetime.time(8, 50)},
+        }
 
     Raises `InvalidFormatError` exception if the input dictionary is
     not in the expected format
