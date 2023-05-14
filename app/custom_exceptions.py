@@ -14,7 +14,7 @@ class DataLoadingError(Exception):
     """Raised data cannot be read as a CSV or Pandas DataFrame"""
     pass
 
-class ValidationError(Exception):
+class DataValidationError(Exception):
     """Raised data cannot be read as a CSV or Pandas DataFrame"""
     pass
 

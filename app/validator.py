@@ -75,7 +75,7 @@ def check_for_expected_columns(column_names: ty.List) -> None:
     column_names = set(column_names)
     for name in config.EXPECTED_COL_NAMES:
         if name not in column_names:
-            raise ce.ValidationError(
+            raise ce.DataValidationError(
                 'Fetched CSV does not contain expected columns.\n'
                 f'Expected columns: {config.EXPECTED_COL_NAMES}\n'
                 f'Fetched columns: {column_names}'

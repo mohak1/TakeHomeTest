@@ -79,7 +79,7 @@ class TestDataChunk(unittest.TestCase):
     def test_validation_error(self, mock_get_data_stream):
         mock_data_stream = MockValidDataStream()
         mock_get_data_stream.return_value = mock_data_stream
-        with self.assertRaises(ce.ValidationError):
+        with self.assertRaises(ce.DataValidationError):
             list(data_f.get_data_chunk('url'))
 
 # pylint: disable=unused-argument

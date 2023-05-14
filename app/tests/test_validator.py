@@ -67,7 +67,7 @@ class TestValidator(unittest.TestCase):
             (extra_cols, None),
 
             # case: input does not have all expected columns
-            (expected_cols[:-2], ce.ValidationError),
+            (expected_cols[:-2], ce.DataValidationError),
         ]
         for cols, expected in test_cases:
             with self.subTest(cols=cols, expected=expected):
