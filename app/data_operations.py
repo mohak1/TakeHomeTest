@@ -3,8 +3,10 @@ Contains functions that are used for performing operations on data
 including cleaning, formatting, etc
 """
 import typing as ty
+import tasks
 
 import config
+import custom_exceptions as ce
 import pandas as pd
 import validator
 
@@ -53,3 +55,45 @@ def remove_cols_that_are_not_needed(data: pd.DataFrame) -> None:
 def remove_rows_where_data_is_na(data: pd.DataFrame):
     """Removes rows where value for any column is 'na'"""
     data = data.dropna(inplace=True)
+
+def formatted_task_1_results(
+    result: ty.Dict, count: int
+) -> ty.Tuple[ty.List[ty.Tuple], str, ty.List[ty.Tuple]]:
+    """
+    Takes a dictionary as an argument and expects it to have the format
+    of Task 1 output
+
+    Raises `InvalidFormatError` exception if the input is not in the
+    expectd format, i.e,
+    {
+        '01/06/2006': {'temp': 17.2, 'time': datetime.time(15, 0)},
+        '01/07/2006': {'temp': 16.0, 'time': datetime.time(8, 50)},
+    }
+
+    Returns:
+        A tuple contining 3 elements. Each element is a formatted output
+        for task 1
+        month_avg_hottest_time (list): contains tuples of date and time str
+        most_common_hottest_time (str): value of most common hottest time
+        top_hottest_times (list): contains tuples of temp and date str
+    >>> Example:
+    (
+        [('05/2006', '14:40'), ('06/2006', '12:33')],
+        '14:50',
+        [('23.2', '06/06/2006'), ('22.4', '11/06/2006'),]
+    )
+    """
+    try:
+        validator.check_task_1_dict_format(result)
+    except ce.InvalidFormatError as err:
+        raise ce.InvalidFormatError(
+            'Task 1 output is expected to be a dict of dictionaries:\n'
+            '{str: {"temp":int,"time": datetime.time}, ...}\n'
+            f'Traceback:\n{err}'
+        )
+
+    month_avg_hottest_time = tasks.avg_time_of_hottest_daily_temp(result)
+    most_common_hottest_time = tasks.hottest_time_with_hightest_freq(result)
+    top_hottest_times = tasks.top_hottest_times(result, count)
+
+    return month_avg_hottest_time, most_common_hottest_time, top_hottest_times
