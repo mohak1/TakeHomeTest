@@ -92,7 +92,7 @@ def formatted_task_1_results(
     of Task 1 output
 
     Raises `InvalidFormatError` exception if the input is not in the
-    expectd format, i.e,
+    expectd format, i.e. if the input is not in this format:
     {
         '01/06/2006': {'temp': 17.2, 'time': datetime.time(15, 0)},
         '01/07/2006': {'temp': 16.0, 'time': datetime.time(8, 50)},
