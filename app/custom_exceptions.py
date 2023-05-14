@@ -17,3 +17,13 @@ class DataLoadingError(Exception):
 class ValidationError(Exception):
     """Raised data cannot be read as a CSV or Pandas DataFrame"""
     pass
+
+class UnSupporterdDataTypeError(Exception):
+    """
+    Raised when a datatype is encountered that is not supported by the
+    operation.
+    Example:
+        When converting a Pandas DataFrame column values from string
+        to number but a value is encountered that is non numeric
+    """
+    pass
