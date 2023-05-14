@@ -8,9 +8,10 @@ import typing as ty
 from collections import deque
 
 import config
+import custom_exceptions as ce
 import pandas as pd
 import requests
-import custom_exceptions as ce
+import validator
 
 logger = logging.getLogger(__name__)
 
@@ -70,22 +71,27 @@ def get_data_chunk(url: str) -> pd.DataFrame:
                     # first row of the CSV contains column names, not data
                     # removing first row so it doesnt get added as data row
                     col_names = rows[0]
+                    validator.check_for_expected_columns(col_names)
                     rows.popleft()
                 dframe = pd.DataFrame(columns=col_names, data=rows)
                 rows = []
                 yield dframe
-        if rows:
-            # if data is smaller than chunk size
+        if rows: # if data is smaller than chunk size
             if not col_names:
-                # first row of the CSV contains column names, not data
-                # removing first row so it doesnt get added as data row
                 col_names = rows[0]
+                validator.check_for_expected_columns(col_names)
                 rows.popleft()
             dframe = pd.DataFrame(columns=col_names, data=rows)
             yield dframe
     except (csv.Error, ValueError) as err:
         raise ce.DataLoadingError(
             'Encountered an issue in loading the fetched data \n'
-            f'Make sure the data being fetched is a valid CSV \n'
-            f'Traceback: \n {err}'
+            'Make sure the data being fetched is a valid CSV and '
+            'contains columns expected for computation.\n'
+            f'Traceback:\n{err}'
+        )
+    except ce.ValidationError as err:
+        raise ce.ValidationError(
+            f'The resource at `{url}` does not contain the columns '
+            f'required for tasks.\nTraceback:\n{err}'
         )
