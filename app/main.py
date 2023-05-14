@@ -56,15 +56,17 @@ def main() -> None:
 
     for data_chunk in data_f.get_data_chunk(config.URL):
         data_op.transform_data(data_chunk) # TODO: Raise/suppress exceptions
-        tasks.perform_task_1(data_chunk, task_1_output)
+        tasks.perform_task_1(data_chunk, config.T1_COL_NAME, task_1_output)
 
-    task_1_output_str = data_op.format_task_1_results(task_1_output) # TODO: Raise/suppress exceptions
+    task_1_a, task_1_b, task_1_c = data_op.formatted_task_1_results(
+        task_1_output, config.T1_COUNT_OF_TOP_HOTTEST_DAYS
+    ) # TODO: Raise/suppress exceptions
 
     # save to file
-    file_op.append_to_file(
-        path=config.OUTPUT_DIR,
-        file_name=config.T1_FILE_NAME,
-        data=task_1_output_str
+    file_op.save_task_1_to_disk( # TODO: handle exception
+        task_1_a, task_1_b, task_1_c,
+        config.T1_COUNT_OF_TOP_HOTTEST_DAYS,
+        config.OUTPUT_DIR, config.T1_FILE_NAME
     )
 
 if __name__ == '__main__':
