@@ -1,10 +1,13 @@
 """The entry point file of the script"""
 import argparse
-import data_fetcher as data_f
-import tasks
-import file_operations as file_op
+import unittest
+
 import config
+import data_fetcher as data_f
 import data_operations as data_op
+import file_operations as file_op
+import tasks
+
 
 def main() -> None:
     """
@@ -55,11 +58,13 @@ def main() -> None:
         data_op.transform_data(data_chunk) # TODO: Raise/suppress exceptions
         tasks.perform_task_1(data_chunk, task_1_output)
 
+    task_1_output_str = data_op.format_task_1_results(task_1_output) # TODO: Raise/suppress exceptions
+
     # save to file
     file_op.append_to_file(
         path=config.OUTPUT_DIR,
         file_name=config.T1_FILE_NAME,
-        data=data_op.format_task_1_results(task_1_output) # TODO: Raise/suppress exceptions
+        data=task_1_output_str
     )
 
 if __name__ == '__main__':
