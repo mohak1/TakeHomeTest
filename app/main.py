@@ -28,6 +28,7 @@ def main() -> None:
     task function so that the task functions have access to the result
     of previous operations. This is vital to ensure the correctness of
     the results partial data is passed in each chunk.
+
     Example:
         Task to find the highest temperature of the day
         >>> iteration `i`: data chunk can have Temperature values for
