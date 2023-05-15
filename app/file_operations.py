@@ -16,7 +16,7 @@ def get_full_path(dir_path: str, file_name: str):
     Returns:
         full_path (str): joined path by joining dir and file name
     """
-    # handle trailing slash in `dir_path` string
+    # handle trailing slash in `dir_path` string
     if dir_path[-1] == '/':
         full_path = f'{dir_path}{file_name}'
     else:
@@ -32,8 +32,8 @@ def save_task_1_to_disk(
     file_name: str,
 ) -> None:
     """
-    Opens `file_name` at `dir_path` with append mode (`a`) and appends
-    to the contents of the file. Creates a new file if the file name
+    Opens `file_name` at `dir_path` with write mode (`w`) and replaces
+    the contents of the file. Creates a new file if the file name
     doesn't exist on the path.
 
     Writes the results for part a, b and c of task 1 to the file.
@@ -57,7 +57,7 @@ def save_task_1_to_disk(
     file_path = get_full_path(dir_path, file_name)
 
     try:
-        with open(file=file_path, mode='a', encoding='utf-8') as file:
+        with open(file=file_path, mode='w', encoding='utf-8') as file:
             # heading for 1 a
             file.write(task_1_a_heading + '\n')
             # output of 1 a
@@ -86,8 +86,8 @@ def save_task_2_to_disk(
         file_name: str,
 ) -> None:
     """
-    Opens `file_name` at `dir_path` with append mode (`a`) and appends
-    to the contents of the file. Creates a new file if the file name
+    Opens `file_name` at `dir_path` with write mode (`w`) and replaces
+    the contents of the file. Creates a new file if the file name
     doesn't exist on the path.
 
     Writes the results of task 2 to the file.
@@ -97,8 +97,40 @@ def save_task_2_to_disk(
         dir_path (str): path of the dir where file is to be saved
         file_name (str): name of the file to be saved
 
-        '14:50',
-        [('23.2', '06/06/2006'), ('22.4', '11/06/2006'),]
+    Raises `FileWriteError` if an error is encountered while writing
+    the output to the file
+    """
+
+    file_path = get_full_path(dir_path, file_name)
+
+    try:
+        with open(file=file_path, mode='w', encoding='utf-8') as file:
+            # output of task 2
+            for ele in task_2_result:
+                file.write(ele[0] + ' ' + ele[1] + '\n')
+
+    except OSError as err:
+        raise ce.FileWriteError(
+            f'Error occurred while writing to file `{file_path}`\n'
+            f'Traceback\n{err}'
+        )
+
+def save_task_3_to_disk(
+        task_3_result: ty.List[ty.Tuple],
+        dir_path: str,
+        file_name: str,
+) -> None:
+    """
+    Opens `file_name` at `dir_path` with write mode (`w`) and replaces
+    the contents of the file. Creates a new file if the file name
+    doesn't exist on the path.
+
+    Writes the results of task 3 to the file.
+
+    Args:
+        task_3_result: List containing Date, Time, Forecast for Task 3
+        dir_path (str): path of the dir where file is to be saved
+        file_name (str): name of the file to be saved
 
     Raises `FileWriteError` if an error is encountered while writing
     the output to the file
@@ -107,10 +139,10 @@ def save_task_2_to_disk(
     file_path = get_full_path(dir_path, file_name)
 
     try:
-        with open(file=file_path, mode='a', encoding='utf-8') as file:
-            # output of task 2
-            for ele in task_2_result:
-                file.write(ele[0] + ' ' + ele[1] + '\n')
+        with open(file=file_path, mode='w', encoding='utf-8') as file:
+            # output of task 3
+            for ele in task_3_result:
+                file.write(ele[0] + ' ' + ele[1] + ' ' + ele[2] + '\n')
 
     except OSError as err:
         raise ce.FileWriteError(

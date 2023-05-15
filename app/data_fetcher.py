@@ -76,7 +76,7 @@ def get_data_chunk(url: str) -> pd.DataFrame:
                 dframe = pd.DataFrame(columns=col_names, data=rows)
                 rows = []
                 yield dframe
-        if rows: # if data is smaller than chunk size
+        if rows: # if data is smaller than chunk size
             if not col_names:
                 col_names = rows[0]
                 validator.check_for_expected_columns(col_names)

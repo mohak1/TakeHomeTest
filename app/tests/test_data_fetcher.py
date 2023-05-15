@@ -23,13 +23,13 @@ class TestGetDataStream(unittest.TestCase):
 
     def test_url_with_invalid_format(self):
         url = 'ThisIsAnInvalidURLFormat'
-        # assert if the RequestException is eaised
+        # assert if the RequestException is eaised
         with self.assertRaises(requests.exceptions.RequestException):
             data_f.get_data_stream(url)
 
     def test_invalid_url_with_valid_format(self):
         url = 'https://invalidURL.com'
-        # assert if the RequestException is eaised
+        # assert if the RequestException is eaised
         with self.assertRaises(requests.exceptions.RequestException):
             data_f.get_data_stream(url)
 

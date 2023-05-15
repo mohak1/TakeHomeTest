@@ -6,6 +6,7 @@ from collections import defaultdict
 
 import config
 import pandas as pd
+from dateutil.relativedelta import relativedelta
 
 
 def perform_task_1(data: pd.DataFrame, col_name, result: ty.Dict) -> None:
@@ -60,7 +61,7 @@ def perform_task_1(data: pd.DataFrame, col_name, result: ty.Dict) -> None:
         else:
             result[date] = {'time':max_temp_time, 'temp':max_temp_val}
 
-def perform_task_2(data: pd.DataFrame, result: ty.Dict) -> None:
+def perform_task_2(data: pd.DataFrame, result: ty.List) -> None:
     """
     Collects all the Dates and Times where the “Hi Temperature” value
     is in range [21.3, 23.3] degrees (both inclusive) or the
@@ -76,7 +77,7 @@ def perform_task_2(data: pd.DataFrame, result: ty.Dict) -> None:
     # convert to date obj to easily compare date ranges
     data['date_obj'] = pd.to_datetime(data['Date'], format='%d/%m/%Y')
 
-    # gather rows in this data chunk that belong to task 2 date ranges
+    # gather rows in this data chunk that belong to task 2 date ranges
     rows_in_date_range = data[
         (config.T2_START_DATE <= data.date_obj) &
         (data.date_obj <= config.T2_END_DATE)
@@ -93,7 +94,7 @@ def perform_task_2(data: pd.DataFrame, result: ty.Dict) -> None:
         for _, row in rows_in_temp_range.iterrows():
             result.append((row['Date'], row['Time'].strftime('%H:%M')))
 
-def perform_task_3():
+def perform_task_3(data: pd.DataFrame, result: ty.List):
     """
     Forecasts “Outside Temperature” for the first 9 days of the
     next month (i.e. July), assuming that:
@@ -101,8 +102,73 @@ def perform_task_3():
     b. The daily pattern of temperatures for July is the same as June.
     For instance, the pattern on July 1 is the same as the pattern on
     June 1, and so on.
+
+    Approach:
+    To forecast 1st July using values of 1st June given that the average
+    on 1st July is constant, the pattern can be copied as deviation from
+    the mean. That is, we can compute the average temp on 1st June and
+    then compute the percentage difference of each value from the mean.
+    This percentage can be used for 1st July.
+
+    >>> Example:
+    Assuming that the computed average day temp on 1st June was 10 the
+    temperature values can be used to calculate percentage difference:
+    time    temp    perct_diff
+    00:00   10      0.0
+    00:10   12      2.0
+    00:20   08      -2.0  (and so on)
+
+    This perct_diff values can be used for 1st July as follows:
+    time   perct_diff(from June)  avg  forecast=avg+(avg*perct_diff)
+    00:00  0.0                    25   25
+    00:10  2.0                    25   25.5
+    00:20  -2.0                   25   24.5
+
+    Since the data is read in chunks, some forecasted values will be
+    less accurate than others since it's possible that a chunk can
+    contain partial values of a day, i.e.
+        chunk `i` contains 00:00 to 15:50
+        chunk `i+1` contains 16:00 to 23:50
+
+    This limitation can handled by collecting the values until all
+    the time ranges of all days (from 1st to 9th June) have been
+    collected and only then proceeding with the forecast operation.
     """
-    raise NotImplementedError
+    # converting to date obj to easily compare date ranges
+    data['date_obj'] = pd.to_datetime(data['Date'], format='%d/%m/%Y')
+
+    # date objects to easily slice the dataframe rows
+    june_1st = datetime.datetime.strptime('01/06/2006', '%d/%m/%Y')
+    june_9th = datetime.datetime.strptime('09/06/2006', '%d/%m/%Y')
+    july_avg_day_temp = config.T3_AVERAGE_TEMP
+
+    # gathering rows if Date is between 1st June to 9th June
+    june_rows = data[
+        (june_1st <= data.date_obj) &
+        (data.date_obj <= june_9th)
+    ]
+
+    dates_in_chunk = june_rows['Date'].unique()
+
+    # gatheing all rows of one date at a time
+    for date in dates_in_chunk:
+        rows_for_date = june_rows[june_rows['Date']==date]
+        col_to_forecast = rows_for_date[config.T3_FORECAST_COL_NAME]
+        average_of_day = col_to_forecast.mean()
+        # deviation of values from the computed day averate
+        perct_diff_from_avg = (col_to_forecast - average_of_day)/average_of_day
+        # using the formula: forecast = avg + (avg * perct_diff)
+        july_forecast = july_avg_day_temp + (july_avg_day_temp*perct_diff_from_avg)
+        # storing (July date, Time, Forecasted value) in a list
+        for ind, row in rows_for_date.iterrows():
+            july_date = row['date_obj'] + relativedelta(months=1)
+            result.append(
+                (
+                    july_date.strftime('%d/%m/%Y'),
+                    row['Time'].strftime('%H:%M'),
+                    str(july_forecast[ind])
+                )
+            )
 
 def get_avg_time(time1: datetime.time, time2: datetime.time) -> datetime.time:
     """
@@ -157,7 +223,7 @@ def avg_time_of_hottest_daily_temp(result: ty.Dict) -> ty.List[ty.Tuple]:
         else:
             avg_hottest_time[mm_yyyy] = result[key]['time']
 
-    # convert the dict to list of tuples and convert time to string
+    # convert the dict to list of tuples and convert time to string
     values_as_list = [
         (i[0], i[1].strftime('%H:%M')) for i in avg_hottest_time.items()
     ]
@@ -186,7 +252,7 @@ def hottest_time_with_hightest_freq(result: ty.Dict) -> str:
     """
     freq_count = defaultdict(int)
 
-    # count the frequency of each 'time' object
+    # count the frequency of each 'time' object
     for ele in result:
         time_obj = result[ele]['time']
         freq_count[time_obj] += 1
@@ -194,7 +260,7 @@ def hottest_time_with_hightest_freq(result: ty.Dict) -> str:
     max_freq = 0
     time_with_max_freq = None
 
-    # return the time with max frequency
+    # return the time with max frequency
     for time in freq_count:
         if freq_count[time] > max_freq:
             max_freq = freq_count[time]
@@ -231,8 +297,8 @@ def top_hottest_times(result: ty.Dict, count: int) -> ty.List[ty.Tuple]:
     """
 
     # sorting ascending based on -ve value of `temp` and date (i.e. key)
-    # this results in `temp` being sorted in descing order
-    # and date being sorted in ascending order
+    # this results in `temp` being sorted in descing order
+    # and date being sorted in ascending order
     # result.items() -> tuple(key, {'temp':num, 'time': date_obj})
     # `item[1]['temp']` is the temp value (taken as -ve)
     # `item[0]` is the key (i.e. date string)
@@ -243,7 +309,7 @@ def top_hottest_times(result: ty.Dict, count: int) -> ty.List[ty.Tuple]:
     # take the top `count` elements
     top_elements = sorted_result[:count]
 
-    # conver to list of tuples (of strings) for ease of writing to disk
+    # conver to list of tuples (of strings) for ease of writing to disk
     top_temp_and_dates = [
         (str(i[1]['temp']), i[0]) for i in top_elements
     ]
