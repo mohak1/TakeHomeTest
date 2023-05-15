@@ -1,7 +1,10 @@
 """This file contains unit tests for functions in `tasks.py`"""
 
 import datetime
+import sys
 import unittest
+
+sys.path.append('./app')
 
 import pandas as pd
 import tasks

@@ -1,12 +1,15 @@
 """This file contains unit tests for functions in `data_fetcher.py`"""
 
+import sys
 import unittest
 from unittest.mock import patch
 
+sys.path.append('./app')
+
+import custom_exceptions as ce
 import data_fetcher as data_f
 import pandas as pd
 import requests
-import custom_exceptions as ce
 
 # pylint: disable=missing-class-docstring
 # pylint: disable=missing-function-docstring

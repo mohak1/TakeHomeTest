@@ -1,7 +1,9 @@
 """This file contains unit tests for functions in `file_operations.py`"""
-
 import os
+import sys
 import unittest
+
+sys.path.append('./app')
 
 import custom_exceptions as ce
 import file_operations as file_op
