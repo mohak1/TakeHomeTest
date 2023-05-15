@@ -1,14 +1,18 @@
 """The entry point file of the script"""
 import argparse
+import logging
 import unittest
 
+import sys
 import config
 import data_fetcher as data_f
 import data_operations as data_op
 import file_operations as file_op
+import custom_exceptions as ce
 import tasks
 import validator
 
+logging.basicConfig(level=logging.INFO)
 
 def main() -> None:
     """
@@ -53,12 +57,12 @@ def main() -> None:
 
     The results are written to a file on the disk
     """
-    # validate directory paths
+    logging.info('starting execution')
     try:
         validator.validate_dir_path(config.OUTPUT_DIR)
     except NotADirectoryError as err:
-        # TODO: handle this
-        ...
+        logging.error('Invalid directory Path\n%s', str(err), exc_info=True)
+        sys.exit(1)
 
     # output dictionaries for tracking the output of tasks
     task_1_output = {}
@@ -66,29 +70,37 @@ def main() -> None:
     task_3_output = []
 
     for data_chunk in data_f.get_data_chunk(config.URL):
-        data_op.transform_data(data_chunk) # TODO: Raise/suppress exceptions
+        try:
+            data_op.transform_data(data_chunk)
+        except ce.UnSupporterdDataTypeError as err:
+            logging.error('Data transformation error\n%s', str(err), exc_info=True)
+            sys.exit(1)
+
         tasks.perform_task_1(data_chunk, config.T1_COL_NAME, task_1_output)
         tasks.perform_task_2(data_chunk, task_2_output)
         tasks.perform_task_3(data_chunk, task_3_output)
 
     task_1_a, task_1_b, task_1_c = data_op.formatted_task_1_results(
         task_1_output, config.T1_COUNT_OF_TOP_HOTTEST_DAYS
-    ) # TODO: Raise/suppress exceptions
+    )
 
+    logging.info('starting save operation')
     # save to file
-    file_op.save_task_1_to_disk( # TODO: handle exception
+    file_op.save_task_1_to_disk(
         task_1_a, task_1_b, task_1_c,
         config.T1_COUNT_OF_TOP_HOTTEST_DAYS,
         config.OUTPUT_DIR, config.T1_FILE_NAME
     )
 
-    file_op.save_task_2_to_disk( # TODO: handle exception
+    file_op.save_task_2_to_disk(
         task_2_output, config.OUTPUT_DIR, config.T2_FILE_NAME
     )
 
-    file_op.save_task_3_to_disk( # TODO: handle exception
+    file_op.save_task_3_to_disk(
         task_3_output, config.OUTPUT_DIR, config.T3_FILE_NAME
     )
+
+    logging.info('task completed')
 
 if __name__ == '__main__':
 
