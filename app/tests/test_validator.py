@@ -1,7 +1,9 @@
 """This file contains unit tests for functions in `validator.py`"""
-
 import datetime
+import sys
 import unittest
+
+sys.path.append('./app')
 
 import config
 import custom_exceptions as ce
