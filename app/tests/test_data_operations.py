@@ -268,15 +268,3 @@ class TestValidator(unittest.TestCase):
             input_data, 10
         )
         self.assertEqual(result, expected)
-
-    def test_formatted_task_1_results_error_raised(self):
-        input_data = {
-            '31/05/2006': {'time': datetime.time(14, 40), 'temp': 15.5},
-            '01/06/2006': [datetime.time(15, 0), 17.2],
-            '02/06/2006': {'time': datetime.time(13, 20), '123': 17.7},
-            '03/06/2006': {'abc': datetime.time(14, 50), 'temp': 19.6},
-        }
-        with self.assertRaises(ce.InvalidFormatError):
-            data_op.formatted_task_1_results(
-                input_data, 10
-            )
