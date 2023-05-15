@@ -31,10 +31,3 @@ class UnSupporterdDataTypeError(Exception):
         to number but a value is encountered that is non numeric
     """
     pass
-
-class FileWriteError(Exception):
-    """
-    Raised when an error occurs while writing to a file. Likely caused
-    when the file is moved/deleted during the operation
-    """
-    pass
