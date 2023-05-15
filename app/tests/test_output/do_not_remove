@@ -1,0 +1,3 @@
+This file is here so that git can keep tracking this directory
+Test `test_save_task_1_to_disk_no_error_raised` will start failing
+if this `app/tests/test_output ` ceases to be a valid path
