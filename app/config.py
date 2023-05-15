@@ -11,7 +11,7 @@ CHUNK_SIZE = 1024
 OUTPUT_DIR = './output'
 T1_FILE_NAME = 'task1.txt'
 T2_FILE_NAME = 'task2.txt'
-T3_FILE_NAME = ''
+T3_FILE_NAME = 'task3.txt'
 
 # column names that are required in the CSV file for the tasks
 EXPECTED_COL_NAMES = [
@@ -38,6 +38,5 @@ T2_COL_VALUE_RANGE = [
 ]
 
 # constants used for Task 3
-T3_COL_NAME = 'Outside Temperature'
-AVERAGE_TEMP = 25
-T3_NUM_DAYS = 9
+T3_FORECAST_COL_NAME = 'Outside Temperature'
+T3_AVERAGE_TEMP = 25
