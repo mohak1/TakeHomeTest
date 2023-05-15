@@ -117,3 +117,38 @@ def save_task_2_to_disk(
             f'Error occurred while writing to file `{file_path}`\n'
             f'Traceback\n{err}'
         )
+
+def save_task_3_to_disk(
+        task_3_result: ty.List[ty.Tuple],
+        dir_path: str,
+        file_name: str,
+) -> None:
+    """
+    Opens `file_name` at `dir_path` with write mode (`w`) and replaces
+    the contents of the file. Creates a new file if the file name
+    doesn't exist on the path.
+
+    Writes the results of task 3 to the file.
+
+    Args:
+        task_3_result: List containing Date, Time, Forecast for Task 3
+        dir_path (str): path of the dir where file is to be saved
+        file_name (str): name of the file to be saved
+
+    Raises `FileWriteError` if an error is encountered while writing
+    the output to the file
+    """
+
+    file_path = get_full_path(dir_path, file_name)
+
+    try:
+        with open(file=file_path, mode='a', encoding='utf-8') as file:
+            # output of task 3
+            for ele in task_3_result:
+                file.write(ele[0] + ' ' + ele[1] + ' ' + ele[2] + '\n')
+
+    except OSError as err:
+        raise ce.FileWriteError(
+            f'Error occurred while writing to file `{file_path}`\n'
+            f'Traceback\n{err}'
+        )
