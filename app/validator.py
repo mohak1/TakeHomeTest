@@ -10,17 +10,14 @@ import config
 import custom_exceptions as ce
 
 
-def check_command_line_args() -> None:
-    raise NotImplementedError
-
 def check_task_1_dict_format(task_1_output: ty.Dict) -> None:
     """
     Task 1 output is a dictionary of dictionaries where each element of
     the dictionary is of the format:
-        string_object: {
-            'temp': int,
-            'time': datetime_object,
-            }
+        {
+            '01/06/2006': {'temp': 17.2, 'time': datetime.time(15, 0)},
+            '01/07/2006': {'temp': 16.0, 'time': datetime.time(8, 50)},
+        }
 
     Raises `InvalidFormatError` exception if the input dictionary is
     not in the expected format
@@ -78,7 +75,7 @@ def check_for_expected_columns(column_names: ty.List) -> None:
     column_names = set(column_names)
     for name in config.EXPECTED_COL_NAMES:
         if name not in column_names:
-            raise ce.ValidationError(
+            raise ce.DataValidationError(
                 'Fetched CSV does not contain expected columns.\n'
                 f'Expected columns: {config.EXPECTED_COL_NAMES}\n'
                 f'Fetched columns: {column_names}'

@@ -90,8 +90,8 @@ def get_data_chunk(url: str) -> pd.DataFrame:
             'contains columns expected for computation.\n'
             f'Traceback:\n{err}'
         )
-    except ce.ValidationError as err:
-        raise ce.ValidationError(
+    except ce.DataValidationError as err:
+        raise ce.DataValidationError(
             f'The resource at `{url}` does not contain the columns '
             f'required for tasks.\nTraceback:\n{err}'
         )

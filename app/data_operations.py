@@ -16,6 +16,13 @@ def transform_data(data: pd.DataFrame) -> None:
     Converts 'Date' and 'Time' column to datetime while keeping the
     original format.
     Converts the column names in config.NUMERIC_COL_NAMES to numeric
+
+    Raises `UnSupporterdDataTypeError` if operations are performed on
+    Pandas DataFrame that are not possible due to unsupported column
+    values, eg: converting a date string to a number
+
+    Args:
+        data (DataFrame): the DataFrame that is to be cleaned and transformed
     """
     remove_cols_that_are_not_needed(data)
     convert_date_col_to_datetime(data)
@@ -28,20 +35,41 @@ def convert_date_col_to_datetime(data: pd.DataFrame) -> None:
     Converts the values in 'Date' column in the dataframe to a datetime
     object and keeps the original date formatting (DD/MM/YYYY)
     """
-    data['Date'] = pd.to_datetime(data['Date'], format='%d/%m/%Y')
-    data['Date'] = data['Date'].dt.strftime('%d/%m/%Y')
+    try:
+        data['Date'] = pd.to_datetime(data['Date'], format='%d/%m/%Y')
+        data['Date'] = data['Date'].dt.strftime('%d/%m/%Y')
+    except ValueError as err:
+        raise ce.UnSupporterdDataTypeError(
+            'An unsupported value encountered in column `Date` that '
+            'cannot be converted to type `datetime`\n'
+            f'Traceback:\n{err}'
+        )
 
 def convert_time_col_to_datetime(data: pd.DataFrame) -> None:
     """
     Converts the values in 'Time' column in the dataframe to a datetime
     object for easy reference of time
     """
-    data['Time'] = pd.to_datetime(data['Time'], format='%H:%M').dt.time
+    try:
+        data['Time'] = pd.to_datetime(data['Time'], format='%H:%M').dt.time
+    except ValueError as err:
+        raise ce.UnSupporterdDataTypeError(
+            'An unsupported value encountered in column `Time` that '
+            'cannot be converted to type `datetime.time`\n'
+            f'Traceback:\n{err}'
+        )
 
 def convert_column_data_to_numeric(data) -> None:
     """Converts the values in `col_name` to numeric type"""
     for name in config.NUMERIC_COL_NAMES:
-        data[name] = pd.to_numeric(data[name])
+        try:
+            data[name] = pd.to_numeric(data[name])
+        except ValueError as err:
+            raise ce.UnSupporterdDataTypeError(
+            f'An unsupported value encountered in column `{name}` that '
+            'cannot be converted to a numeric type`\n'
+            f'Traceback:\n{err}'
+        )
 
 def remove_cols_that_are_not_needed(data: pd.DataFrame) -> None:
     """
@@ -64,7 +92,7 @@ def formatted_task_1_results(
     of Task 1 output
 
     Raises `InvalidFormatError` exception if the input is not in the
-    expectd format, i.e,
+    expectd format, i.e. if the input is not in this format:
     {
         '01/06/2006': {'temp': 17.2, 'time': datetime.time(15, 0)},
         '01/07/2006': {'temp': 16.0, 'time': datetime.time(8, 50)},
