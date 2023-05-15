@@ -38,12 +38,14 @@ def perform_task_1(data: pd.DataFrame, col_name, result: ty.Dict) -> None:
         '01/07/2006': {'temp': 16.0, 'time': datetime.time(8, 50)},
     }
     """
+
     # gather all unique dates
     unique_dates = data['Date'].unique()
-    # for each date, get the max value for `col_name` and the associted time
-    for date_ in unique_dates:
+
+    # for each date, get the max value for `col_name` and the its time
+    for date in unique_dates:
         temp_and_time_on_date = data.loc[
-            data['Date']==date_, (col_name, 'Time')
+            data['Date']==date, (col_name, 'Time')
         ]
         max_temp_val = temp_and_time_on_date[col_name].max()
         max_temp_index = temp_and_time_on_date[col_name].idxmax()
@@ -51,12 +53,12 @@ def perform_task_1(data: pd.DataFrame, col_name, result: ty.Dict) -> None:
 
         # since data is read in chunks, it's possible to have the same
         # date in more than one chunks
-        if date_ in result:
-            if max_temp_val > result[date_]['temp']:
-                result[date_]['temp'] = max_temp_val
-                result[date_]['time'] = max_temp_time
+        if date in result:
+            if max_temp_val > result[date]['temp']:
+                result[date]['temp'] = max_temp_val
+                result[date]['time'] = max_temp_time
         else:
-            result[date_] = {'time':max_temp_time, 'temp':max_temp_val}
+            result[date] = {'time':max_temp_time, 'temp':max_temp_val}
 
 def perform_task_2(data: pd.DataFrame, result: ty.Dict) -> None:
     """
@@ -66,22 +68,28 @@ def perform_task_2(data: pd.DataFrame, result: ty.Dict) -> None:
     in the first 9 days of June
 
     The value for column name (“Hi Temperature”, “Low Temperature”, etc)
-    and their respective temperature ranges are read from config.py
-    The date range (i.e. first 9 days of June) is also read from config.py
+    and their respective temperature ranges are read from `config.py`
+    The date range (i.e. first 9 days of June) is also read from
+    `config.py`
     """
+
+    # convert to date obj to easily compare date ranges
     data['date_obj'] = pd.to_datetime(data['Date'], format='%d/%m/%Y')
+
+    # gather rows in this data chunk that belong to task 2 date ranges
     rows_in_date_range = data[
         (config.T2_START_DATE <= data.date_obj) &
         (data.date_obj <= config.T2_END_DATE)
     ]
-    for ele in config.T2_COL_TEMP_RANGE:
-        # ele = (col_name, range_start, range_end)
-        col_name, range_start, range_end = ele
-        rows_in_temp_range = rows_in_date_range[
-            (range_start <= rows_in_date_range[col_name]) |
-            (rows_in_date_range[col_name] >= range_end)
-        ]
 
+    # from all rows gathered in prev step, collect the rows where the
+    # values are in the specified range for column names in config list
+    for col_name, range_start, range_end in config.T2_COL_VALUE_RANGE:
+        rows_in_temp_range = rows_in_date_range[
+            (range_start <= rows_in_date_range[col_name]) &
+            (rows_in_date_range[col_name] <= range_end)
+        ]
+        # store the Date and Time value for the rows in the value range
         for _, row in rows_in_temp_range.iterrows():
             result.append((row['Date'], row['Time'].strftime('%H:%M')))
 

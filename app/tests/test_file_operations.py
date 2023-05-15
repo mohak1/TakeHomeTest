@@ -12,6 +12,20 @@ import file_operations as file_op
 
 class TestValidator(unittest.TestCase):
 
+    def test_get_full_path_no_trailing_slash(self):
+        dir_path = 'a/b/c'
+        file_name = 'd.txt'
+        output = file_op.get_full_path(dir_path, file_name)
+        expected = 'a/b/c/d.txt'
+        self.assertEqual(output, expected)
+
+    def test_get_full_path_has_trailing_slash(self):
+        dir_path = 'a/b/c/'
+        file_name = 'd.txt'
+        output = file_op.get_full_path(dir_path, file_name)
+        expected = 'a/b/c/d.txt'
+        self.assertEqual(output, expected)
+
     def test_save_task_1_to_disk_no_error_raised(self):
         task_1_a = [('05/2006', '14:40'), ('06/2006', '12:33')]
         task_1_b = '14:50'
@@ -22,5 +36,14 @@ class TestValidator(unittest.TestCase):
             task_1_a, task_1_b, task_1_c,
             top_count_value=5,
             dir_path=dir_path, file_name=file_name
+        )
+        self.assertTrue(os.path.exists(dir_path+'/'+file_name))
+
+    def test_save_task_2_to_disk_no_error_raised(self):
+        task_2_res = [('05/2006', '14:40'), ('06/2006', '12:33')]
+        dir_path = './app/tests/test_output'
+        file_name = 't2_test.txt'
+        file_op.save_task_2_to_disk(
+            task_2_res, dir_path=dir_path, file_name=file_name
         )
         self.assertTrue(os.path.exists(dir_path+'/'+file_name))
