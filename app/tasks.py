@@ -66,22 +66,28 @@ def perform_task_2(data: pd.DataFrame, result: ty.Dict) -> None:
     in the first 9 days of June
 
     The value for column name (“Hi Temperature”, “Low Temperature”, etc)
-    and their respective temperature ranges are read from config.py
-    The date range (i.e. first 9 days of June) is also read from config.py
+    and their respective temperature ranges are read from `config.py`
+    The date range (i.e. first 9 days of June) is also read from
+    `config.py`
     """
+
+    # convert to date obj to easily compare date ranges
     data['date_obj'] = pd.to_datetime(data['Date'], format='%d/%m/%Y')
+
+    # gather rows in this data chunk that belong to task 2 date ranges
     rows_in_date_range = data[
         (config.T2_START_DATE <= data.date_obj) &
         (data.date_obj <= config.T2_END_DATE)
     ]
-    for ele in config.T2_COL_TEMP_RANGE:
-        # ele = (col_name, range_start, range_end)
-        col_name, range_start, range_end = ele
-        rows_in_temp_range = rows_in_date_range[
-            (range_start <= rows_in_date_range[col_name]) |
-            (rows_in_date_range[col_name] >= range_end)
-        ]
 
+    # from all rows gathered in prev step, collect the rows where the
+    # values are in the specified range for column names in config list
+    for col_name, range_start, range_end in config.T2_COL_VALUE_RANGE:
+        rows_in_temp_range = rows_in_date_range[
+            (range_start <= rows_in_date_range[col_name]) &
+            (rows_in_date_range[col_name] <= range_end)
+        ]
+        # store the Date and Time value for the rows in the value range
         for _, row in rows_in_temp_range.iterrows():
             result.append((row['Date'], row['Time'].strftime('%H:%M')))
 
