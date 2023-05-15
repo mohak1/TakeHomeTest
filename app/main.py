@@ -70,6 +70,7 @@ def main() -> None:
     task_3_output = []
 
     for data_chunk in data_f.get_data_chunk(config.URL):
+
         try:
             data_op.transform_data(data_chunk)
         except ce.UnSupporterdDataTypeError as err:
@@ -85,7 +86,6 @@ def main() -> None:
     )
 
     logging.info('starting save operation')
-    # save to file
     file_op.save_task_1_to_disk(
         task_1_a, task_1_b, task_1_c,
         config.T1_COUNT_OF_TOP_HOTTEST_DAYS,
@@ -106,7 +106,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
 
-    # for running the tests locally
+    # for running tests locally
     parser.add_argument(
         '--run_tests',
         action='store_true',
