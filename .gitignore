@@ -3,4 +3,4 @@
 *.pyc
 /env
 .vscode
-/app/tests/test_output/
+/app/tests/test_output/*
