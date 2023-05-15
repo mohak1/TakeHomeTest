@@ -2,12 +2,14 @@
 Contains functions that are used for performing operations on data
 including cleaning, formatting, etc
 """
+import logging
+import sys
 import typing as ty
-import tasks
 
 import config
 import custom_exceptions as ce
 import pandas as pd
+import tasks
 import validator
 
 
@@ -91,8 +93,7 @@ def formatted_task_1_results(
     Takes a dictionary as an argument and expects it to have the format
     of Task 1 output
 
-    Raises `InvalidFormatError` exception if the input is not in the
-    expectd format, i.e. if the input is not in this format:
+    This is the expected format:
     {
         '01/06/2006': {'temp': 17.2, 'time': datetime.time(15, 0)},
         '01/07/2006': {'temp': 16.0, 'time': datetime.time(8, 50)},
@@ -114,11 +115,8 @@ def formatted_task_1_results(
     try:
         validator.check_task_1_dict_format(result)
     except ce.InvalidFormatError as err:
-        raise ce.InvalidFormatError(
-            'Task 1 output is expected to be a dict of dictionaries:\n'
-            '{str: {"temp":int,"time": datetime.time}, ...}\n'
-            f'Traceback:\n{err}'
-        )
+        logging.error('Input not in valid format\n%s', str(err), exc_info=True)
+        sys.exit(1)
 
     month_avg_hottest_time = tasks.avg_time_of_hottest_daily_temp(result)
     most_common_hottest_time = tasks.hottest_time_with_hightest_freq(result)
