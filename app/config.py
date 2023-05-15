@@ -31,7 +31,7 @@ T1_COUNT_OF_TOP_HOTTEST_DAYS = 10
 # constants used for Task 2
 T2_START_DATE = datetime.datetime.strptime('01/06/2006', '%d/%m/%Y')
 T2_END_DATE = datetime.datetime.strptime('09/06/2006', '%d/%m/%Y')
-T2_COL_TEMP_RANGE = [
+T2_COL_VALUE_RANGE = [
     # column name, range start value, range end value (both inclusive)
     ('Hi Temperature', 21.3, 23.3),
     ('Low Temperature', 10.1, 10.5),
