@@ -4,6 +4,7 @@ import datetime
 import typing as ty
 from collections import defaultdict
 
+import config
 import pandas as pd
 
 
@@ -26,6 +27,7 @@ def perform_task_1(data: pd.DataFrame, col_name, result: ty.Dict) -> None:
 
     Args:
         data (DataFrame): The dataframe containing CSV data
+        col_name (str): Column name on which the task 1 is to be performed
         result (dict): Variable for keeping track of the information
 
     The `result` dict has date string as its key and a dictionary of
@@ -56,16 +58,32 @@ def perform_task_1(data: pd.DataFrame, col_name, result: ty.Dict) -> None:
         else:
             result[date_] = {'time':max_temp_time, 'temp':max_temp_val}
 
-def perform_task_2():
+def perform_task_2(data: pd.DataFrame, result: ty.Dict) -> None:
     """
-    Using the "Hi Temperature" values produce a “.txt” file containing
-
     Collects all the Dates and Times where the “Hi Temperature” value
     is in range [21.3, 23.3] degrees (both inclusive) or the
     “Low Temperature” value is in range [10.1, 10.5] (both inclusive)
     in the first 9 days of June
+
+    The value for column name (“Hi Temperature”, “Low Temperature”, etc)
+    and their respective temperature ranges are read from config.py
+    The date range (i.e. first 9 days of June) is also read from config.py
     """
-    raise NotImplementedError
+    data['date_obj'] = pd.to_datetime(data['Date'], format='%d/%m/%Y')
+    rows_in_date_range = data[
+        (config.T2_START_DATE <= data.date_obj) &
+        (data.date_obj <= config.T2_END_DATE)
+    ]
+    for ele in config.T2_COL_TEMP_RANGE:
+        # ele = (col_name, range_start, range_end)
+        col_name, range_start, range_end = ele
+        rows_in_temp_range = rows_in_date_range[
+            (range_start <= rows_in_date_range[col_name]) |
+            (rows_in_date_range[col_name] >= range_end)
+        ]
+
+        for _, row in rows_in_temp_range.iterrows():
+            result.append((row['Date'], row['Time'].strftime('%H:%M')))
 
 def perform_task_3():
     """

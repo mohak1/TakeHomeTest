@@ -32,10 +32,6 @@ class UnSupporterdDataTypeError(Exception):
     """
     pass
 
-class DirectoryValidationError(Exception):
-    """Raised when the path is not a valid directory on the disk"""
-    pass
-
 class FileWriteError(Exception):
     """
     Raised when an error occurs while writing to a file. Likely caused
