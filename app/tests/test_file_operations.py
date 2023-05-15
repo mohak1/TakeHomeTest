@@ -47,3 +47,12 @@ class TestValidator(unittest.TestCase):
             task_2_res, dir_path=dir_path, file_name=file_name
         )
         self.assertTrue(os.path.exists(dir_path+'/'+file_name))
+
+    def test_save_task_3_to_disk_no_error_raised(self):
+        task_3_res = [('05/2006', '14:40', '10.01'), ('06/2006', '12:33', '12.00')]
+        dir_path = './app/tests/test_output'
+        file_name = 't3_test.txt'
+        file_op.save_task_3_to_disk(
+            task_3_res, dir_path=dir_path, file_name=file_name
+        )
+        self.assertTrue(os.path.exists(dir_path+'/'+file_name))

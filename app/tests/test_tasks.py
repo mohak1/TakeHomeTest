@@ -68,7 +68,34 @@ class TestTasks(unittest.TestCase):
         self.assertEqual(output, expected)
 
     def test_perform_task_3(self):
-        self.assertEqual(True, True)
+        input_data = pd.DataFrame(
+            columns=['Date','Time','Outside Temperature','Hi Temperature','Low Temperature'],
+            data=[
+                ['31/05/2006',datetime.time(9,00),9.3,9.7,9.1],
+                ['01/06/2006',datetime.time(9,10),10.1,21.2,9.7],
+                ['01/06/2006',datetime.time(9,20),10.7,21.3,10.4],
+                ['01/06/2006',datetime.time(9,30),11.2,23.3,10.9],
+                ['02/06/2006',datetime.time(9,40),11.4,23.4,11.3],
+                ['02/06/2006',datetime.time(10,10),18.6,18.6,10.0],
+                ['03/06/2006',datetime.time(10,20),18.4,18.5,10.1],
+                ['09/06/2006',datetime.time(10,30),18.3,18.3,10.5],
+                ['09/06/2006',datetime.time(10,40),18.2,18.3,10.6],
+                ['12/06/2006',datetime.time(10,50),18.4,18.6,18.3]
+            ]
+        )
+        output = []
+        expected = [
+            ('01/07/2006', '09:10', '23.671875'),
+            ('01/07/2006', '09:20', '25.078125'),
+            ('01/07/2006', '09:30', '26.25'),
+            ('02/07/2006', '09:40', '19.0'),
+            ('02/07/2006', '10:10', '31.000000000000004'),
+            ('03/07/2006', '10:20', '25.0'),
+            ('09/07/2006', '10:30', '25.068493150684933'),
+            ('09/07/2006', '10:40', '24.931506849315067')
+        ]
+        tasks.perform_task_3(input_data, output)
+        self.assertEqual(output, expected)
 
     def test_get_avg_time(self):
         time1 = datetime.time(10,20)
