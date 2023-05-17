@@ -1,3 +1,56 @@
+## Work in progress ##
+
+========================================================================
+Initial thoughts for version 2 (mitigating shortcomings of version 1)
+========================================================================
+This version builds upon the shortcomings of the previous implementation
+in an attempt to make the script more robust and flexible.
+
+Improvements planned in this version:
+
+1. Using Celery for performing task 1, 2, and 3 in parallel in order to
+    boost the overall performance.
+
+2. Creating a process for storing the intermediate results of the tasks
+    as checkpoints. The implementation in version 1 stores the output
+    of each data chunk in the memory until all the chunks are
+    processed. This puts a limit on the size of the resource that the
+    script can handle.
+    In this version, the intermediate results will be stored to disk
+    after every 'n' number of chunks. This will enable the script to be
+    used for very large data.
+
+-> these checkpoint filds will be combined together to form the final
+    output after all the data chunks are processed
+
+-> can create a logic that scans the output dir for checkpoints and
+    figures out which chunks are missing, then downloads the missing
+    chunks. This will be useful in case of data corruption
+
+3. Consistency on the type of methods that raise an error (when the
+    exception is not recoverable) and the methods that exit the process
+    when an unrecoverable error occurs.
+    Currently, there are multiple methods that perform sys.exit() when
+    faced with an unrecoverable error. This should be changed to
+    increase re-usability of the code.
+    Only the top level method should perform sys.exit() while all other
+    internal methods should raise exceptions.
+
+4. Increasing the number of config variables that can be changed by
+    command line arguments. This will make it easy to use the script
+    in a number of places without the need of changing the config.py
+    file for every individual operation.
+
+-> a number of validation methods will be required for this. And will
+    need to make a decision for the level of checks to be performed
+    in the validator method. i.e. when updating the resource url, the
+    scrictness of the validation check could range from just checking
+    if the input is a non-numeric string, all the way up to checking if
+    the url points to a valid address on the internet
+
+5. Improving the use of logging and increasing the tests
+
+
 ========================================================================
 How to run the code
 ========================================================================
