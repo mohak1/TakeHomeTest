@@ -4,14 +4,24 @@ import datetime
 import typing as ty
 from collections import defaultdict
 
-import config
+import celery
 import pandas as pd
 from dateutil.relativedelta import relativedelta
 
 from app import config
 from app import data_operations as data_op
 
-def perform_task_1(data: pd.DataFrame, col_name, result: ty.Dict) -> None:
+celery_app = celery.Celery(
+    'tasks',
+    broker='amqp://guest:guest@localhost:5672//',
+    worker_pool='threads',
+    backend='rpc://'
+)
+
+# usage: `celery -A app.tasks worker --loglevel=info`
+
+@celery_app.task
+def perform_task_1(data: ty.Dict, col_name, result: ty.Dict) -> ty.Dict:
     """
     Task 1 consists of the following prompts:
         a. Compute the average time of hottest daily temperature (over month)
@@ -24,23 +34,32 @@ def perform_task_1(data: pd.DataFrame, col_name, result: ty.Dict) -> None:
     For this information, we can look at one date at a time and store
     the highest temperature and the time of highest temperature for that
     date.
-    
+
     This function collects the highest temperature and time of highest
     temperature for each date and stores it in the `result` dict.
+    The `result` dict is passed as a parameter which contains the result
+    of task_1 on pervious chunks. The task is performed in the current
+    data chunk and the result is updated in the dict. This dict is
+    returned by the function so that the tasks can be performed using a
+    distributed task queue like Celery
 
     Args:
         data (DataFrame): The dataframe containing CSV data
         col_name (str): Column name on which the task 1 is to be performed
-        result (dict): Variable for keeping track of the information
+        result (dict): Contains the result of task1 on previous chunks
 
-    The `result` dict has date string as its key and a dictionary of
-    type {'temp': float, 'time': datetime} as value
-    >>> Example:
+    Returns:
+        result (dict): `result` dict from args updated with the output
+            of task1 on current data chunk
+
+    >>> Example value of `result`:
     {
-        '01/06/2006': {'temp': 17.2, 'time': datetime.time(15, 0)},
-        '01/07/2006': {'temp': 16.0, 'time': datetime.time(8, 50)},
+        '01/06/2006': {'temp': 17.2, 'time': '15:00:00'},
+        '01/07/2006': {'temp': 16.0, 'time': '08:50:00'},
     }
     """
+
+    data = pd.DataFrame(data)
 
     # gather all unique dates
     unique_dates = data['Date'].unique()
@@ -62,6 +81,7 @@ def perform_task_1(data: pd.DataFrame, col_name, result: ty.Dict) -> None:
                 result[date]['time'] = max_temp_time
         else:
             result[date] = {'time':max_temp_time, 'temp':max_temp_val}
+    return result
 
 def perform_task_2(data: pd.DataFrame, result: ty.List) -> None:
     """
