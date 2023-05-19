@@ -8,6 +8,8 @@ import config
 import pandas as pd
 from dateutil.relativedelta import relativedelta
 
+from app import config
+from app import data_operations as data_op
 
 def perform_task_1(data: pd.DataFrame, col_name, result: ty.Dict) -> None:
     """
