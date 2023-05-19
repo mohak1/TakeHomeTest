@@ -1,16 +1,18 @@
 """The entry point file of the script"""
 import argparse
 import logging
+import sys
 import unittest
 
-import sys
-import config
-import data_fetcher as data_f
-import data_operations as data_op
-import file_operations as file_op
-import custom_exceptions as ce
-import tasks
-import validator
+sys.path.append('.')
+
+# pylint: disable=wrong-import-position
+from app import config
+from app import custom_exceptions as ce
+from app import data_fetcher as data_f
+from app import data_operations as data_op
+from app import file_operations as file_op
+from app import tasks, validator
 
 logging.basicConfig(level=logging.INFO)
 
