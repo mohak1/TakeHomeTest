@@ -6,11 +6,11 @@ import logging
 import sys
 import typing as ty
 
-import config
-import custom_exceptions as ce
 import pandas as pd
-import tasks
-import validator
+
+from app import config
+from app import custom_exceptions as ce
+from app import tasks, validator
 
 
 def transform_data(data: pd.DataFrame) -> None:
