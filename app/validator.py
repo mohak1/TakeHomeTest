@@ -6,8 +6,8 @@ import os
 import numbers
 import typing as ty
 
-import config
-import custom_exceptions as ce
+from app import config
+from app import custom_exceptions as ce
 
 
 def check_task_1_dict_format(task_1_output: ty.Dict) -> None:
