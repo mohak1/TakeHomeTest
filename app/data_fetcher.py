@@ -7,11 +7,12 @@ import logging
 import typing as ty
 from collections import deque
 
-import config
-import custom_exceptions as ce
 import pandas as pd
 import requests
-import validator
+
+from app import config
+from app import custom_exceptions as ce
+from app import validator
 
 
 def get_data_stream(url: str) -> ty.Iterator:
