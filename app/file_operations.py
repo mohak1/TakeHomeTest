@@ -38,6 +38,8 @@ def save_task_1_to_disk(
 
     Writes the results for part a, b and c of task 1 to the file.
 
+    Raises `OSError` if a problem occurs in reading/writing to file
+
     Args:
         task_1_a_result: contains result for 1 a
         task_1_b_result: contains result for 1 b
@@ -87,6 +89,8 @@ def save_task_2_to_disk(
 
     Writes the results of task 2 to the file.
 
+    Raises `OSError` if a problem occurs in reading/writing to file
+
     Args:
         task_2_result: List containing Date and Time for Task 2
         dir_path (str): path of the dir where file is to be saved
@@ -114,6 +118,8 @@ def save_task_3_to_disk(
     doesn't exist on the path.
 
     Writes the results of task 3 to the file.
+
+    Raises `OSError` if a problem occurs in reading/writing to file
 
     Args:
         task_3_result: List containing Date, Time, Forecast for Task 3
