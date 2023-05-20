@@ -348,12 +348,12 @@ def top_hottest_times(result: ty.Dict, count: int) -> ty.List[ty.Tuple]:
     converted to string then returned.
 
     Args:
-        result (dict): dictionary with format of task 1 output, i.e. a 
+        result (dict): dictionary with format of task 1 output, i.e. a
         dictionary of dictionaries where each element of the dictionary
         is of the format:
         {
-            '01/06/2006': {'temp': 17.2, 'time': datetime.time(15, 0)},
-            '01/07/2006': {'temp': 16.0, 'time': datetime.time(8, 50)},
+            '01/06/2006': {'temp': 17.2, 'time': '15:00:00'},
+            '01/07/2006': {'temp': 16.0, 'time': '08:50:00'},
         }
 
         top_count (int): the number of top values to return
