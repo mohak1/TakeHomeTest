@@ -13,7 +13,7 @@ from app import custom_exceptions as ce
 from app import tasks, validator
 
 
-def transform_data(data: pd.DataFrame) -> None:
+def transform_data(data: pd.DataFrame) -> ty.Dict:
     """
     Converts 'Date' and 'Time' column to datetime while keeping the
     original format.
@@ -24,13 +24,17 @@ def transform_data(data: pd.DataFrame) -> None:
     values, eg: converting a date string to a number
 
     Args:
-        data (DataFrame): the DataFrame that is to be cleaned and transformed
+        data (DataFrame): the DataFrame to be cleaned and transformed
+
+    Returns:
+        (dict): the cleaned and transformed DataFrame as a dictionary
     """
+
     remove_cols_that_are_not_needed(data)
-    convert_date_col_to_datetime(data)
     convert_time_col_to_datetime(data)
     convert_column_data_to_numeric(data)
     remove_rows_where_data_is_na(data)
+    return data.to_dict()
 
 def convert_date_col_to_datetime(data: pd.DataFrame) -> None:
     """
