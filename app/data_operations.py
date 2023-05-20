@@ -41,6 +41,7 @@ def convert_date_col_to_datetime(data: pd.DataFrame) -> None:
     Converts the values in 'Date' column in the dataframe to a datetime
     object and keeps the original date formatting (DD/MM/YYYY)
     """
+
     try:
         data['Date'] = pd.to_datetime(data['Date'], format='%d/%m/%Y')
         data['Date'] = data['Date'].dt.strftime('%d/%m/%Y')
@@ -82,6 +83,7 @@ def remove_cols_that_are_not_needed(data: pd.DataFrame) -> None:
     Removes columns from the dataframe that are not used in any of the
     operations.
     """
+
     for col_name in data.columns.values:
         if col_name not in config.EXPECTED_COL_NAMES:
             data.drop(col_name, axis=1, inplace=True)
@@ -116,6 +118,7 @@ def formatted_task_1_results(
         [('23.2', '06/06/2006'), ('22.4', '11/06/2006'),]
     )
     """
+
     try:
         validator.check_task_1_dict_format(result)
     except ce.InvalidFormatError as err:
