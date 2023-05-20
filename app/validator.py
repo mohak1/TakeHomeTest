@@ -56,12 +56,14 @@ def check_task_1_dict_format(task_1_output: ty.Dict) -> None:
                 f'`{task_1_output[key]["temp"]}`'
             )
 
-        if not isinstance(task_1_output[key]['time'], datetime.time):
+        try:
+            datetime.datetime.strptime(task_1_output[key]["time"], "%H:%M:%S")
+        except ValueError as err:
             raise ce.InvalidFormatError(
                 'Expected the value of "time" key in Task 1 output '
                 ' dictionary elements be a datetime.time object but '
-                f'it is of type `{task_1_output[key]["temp"]}`'
-            )
+                f'it is of type `{task_1_output[key]["time"]}`'
+            ) from err
 
 def check_for_expected_columns(column_names: ty.List) -> None:
     """
