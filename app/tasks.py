@@ -268,8 +268,8 @@ def avg_time_of_hottest_daily_temp(result: ty.Dict) -> ty.List[ty.Tuple]:
         dictionary of dictionaries where each element of the dictionary
         is of the format:
         {
-            '01/06/2006': {'temp': 17.2, 'time': datetime.time(15, 0)},
-            '01/07/2006': {'temp': 16.0, 'time': datetime.time(8, 50)},
+            '01/06/2006': {'temp': 17.2, 'time': '15:00:00'},
+            '01/07/2006': {'temp': 16.0, 'time': '08:50:00'},
         }
 
     Returns:
@@ -281,12 +281,15 @@ def avg_time_of_hottest_daily_temp(result: ty.Dict) -> ty.List[ty.Tuple]:
     avg_hottest_time = {}
     for key in result:
         mm_yyyy = key[3:] # key is '31/05/2006'
+        time_obj = datetime.datetime.strptime(
+            result[key]['time'], '%H:%M:%S'
+        )
         if mm_yyyy in avg_hottest_time:
             avg_hottest_time[mm_yyyy] = get_avg_time(
-                avg_hottest_time[mm_yyyy], result[key]['time']
+                avg_hottest_time[mm_yyyy], time_obj
             )
         else:
-            avg_hottest_time[mm_yyyy] = result[key]['time']
+            avg_hottest_time[mm_yyyy] = time_obj
 
     # convert the dict to list of tuples and convert time to string
     values_as_list = [
