@@ -78,32 +78,38 @@ def main() -> None:
     task_3_output = []
 
     for data_chunk in data_f.get_data_chunk(config.URL):
-
         try:
-            data_op.transform_data(data_chunk)
+            data_chunk = data_op.transform_data(data_chunk)
         except ce.UnSupporterdDataTypeError as err:
             logging.error('Data transformation error\n%s', str(err), exc_info=True)
             sys.exit(1)
 
-        tasks.perform_task_1(data_chunk, config.T1_COL_NAME, task_1_output)
-        tasks.perform_task_2(data_chunk, task_2_output)
-        tasks.perform_task_3(data_chunk, task_3_output)
+        chunk_result_t1 = tasks.perform_task_1.delay(
+            data_chunk, config.T1_COL_NAME, task_1_output
+        )
+        chunk_result_t2 = tasks.perform_task_2.delay(data_chunk)
+        chunk_result_t3 = tasks.perform_task_3.delay(data_chunk)
 
+        # TODO: handle exceptions raised from .get()
+        task_1_output = chunk_result_t1.get()
+        task_2_output.extend(chunk_result_t2.get())
+        task_3_output.extend(chunk_result_t3.get())
+
+    # gather the result of subtasks a,b,c from `task_1_output`
     task_1_a, task_1_b, task_1_c = data_op.formatted_task_1_results(
         task_1_output, config.T1_COUNT_OF_TOP_HOTTEST_DAYS
     )
 
     logging.info('starting save operation')
+    # TODO: handle OSError raised by the `save` methods
     file_op.save_task_1_to_disk(
         task_1_a, task_1_b, task_1_c,
         config.T1_COUNT_OF_TOP_HOTTEST_DAYS,
         config.OUTPUT_DIR, config.T1_FILE_NAME
     )
-
     file_op.save_task_2_to_disk(
         task_2_output, config.OUTPUT_DIR, config.T2_FILE_NAME
     )
-
     file_op.save_task_3_to_disk(
         task_3_output, config.OUTPUT_DIR, config.T3_FILE_NAME
     )
