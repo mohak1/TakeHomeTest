@@ -1,7 +1,6 @@
 """Contains functions for performing file read/write operations"""
 
 import logging
-import sys
 import typing as ty
 
 
@@ -16,7 +15,8 @@ def get_full_path(dir_path: str, file_name: str):
     Returns:
         full_path (str): joined path by joining dir and file name
     """
-    # handle trailing slash in `dir_path` string
+
+    # forms full path by checking the trailing slash in `dir_path`
     if dir_path[-1] == '/':
         full_path = f'{dir_path}{file_name}'
     else:
@@ -35,10 +35,7 @@ def save_task_1_to_disk(
     Opens `file_name` at `dir_path` with write mode (`w`) and replaces
     the contents of the file. Creates a new file if the file name
     doesn't exist on the path.
-
     Writes the results for part a, b and c of task 1 to the file.
-
-    Raises `OSError` if a problem occurs in reading/writing to file
 
     Args:
         task_1_a_result: contains result for 1 a
@@ -47,6 +44,9 @@ def save_task_1_to_disk(
         top_count_value: the number of top entires in result 1 c
         dir_path (str): path of the dir where file is to be saved
         file_name (str): name of the file to be saved
+
+    Raises:
+        - `OSError` if a problem occurs in reading/writing to file
     """
 
     task_1_a_heading = 'Average time of hottest daily temperature (over month)'
@@ -75,7 +75,7 @@ def save_task_1_to_disk(
                 file.write(ele[0] + ' ' + ele[1] + '\n')
     except OSError as err:
         logging.error('Error during file write\n%s', str(err), exc_info=True)
-        sys.exit(1)
+        raise OSError from err
 
 def save_task_2_to_disk(
         task_2_result: ty.List[ty.Tuple],
@@ -86,15 +86,15 @@ def save_task_2_to_disk(
     Opens `file_name` at `dir_path` with write mode (`w`) and replaces
     the contents of the file. Creates a new file if the file name
     doesn't exist on the path.
-
     Writes the results of task 2 to the file.
-
-    Raises `OSError` if a problem occurs in reading/writing to file
 
     Args:
         task_2_result: List containing Date and Time for Task 2
         dir_path (str): path of the dir where file is to be saved
         file_name (str): name of the file to be saved
+
+    Raises:
+        - `OSError` if a problem occurs in reading/writing to file
     """
 
     file_path = get_full_path(dir_path, file_name)
@@ -105,7 +105,7 @@ def save_task_2_to_disk(
                 file.write(ele[0] + ' ' + ele[1] + '\n')
     except OSError as err:
         logging.error('Error during file write\n%s', str(err), exc_info=True)
-        sys.exit(1)
+        raise OSError from err
 
 def save_task_3_to_disk(
         task_3_result: ty.List[ty.Tuple],
@@ -116,15 +116,15 @@ def save_task_3_to_disk(
     Opens `file_name` at `dir_path` with write mode (`w`) and replaces
     the contents of the file. Creates a new file if the file name
     doesn't exist on the path.
-
     Writes the results of task 3 to the file.
-
-    Raises `OSError` if a problem occurs in reading/writing to file
 
     Args:
         task_3_result: List containing Date, Time, Forecast for Task 3
         dir_path (str): path of the dir where file is to be saved
         file_name (str): name of the file to be saved
+
+    Raises:
+        - `OSError` if a problem occurs in reading/writing to file
     """
 
     file_path = get_full_path(dir_path, file_name)
@@ -135,4 +135,4 @@ def save_task_3_to_disk(
                 file.write(ele[0] + ' ' + ele[1] + ' ' + ele[2] + '\n')
     except OSError as err:
         logging.error('Error during file write\n%s', str(err), exc_info=True)
-        sys.exit(1)
+        raise OSError from err
