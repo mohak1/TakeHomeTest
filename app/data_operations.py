@@ -102,15 +102,15 @@ def formatted_task_1_results(
 
     This is the expected format:
     {
-        '01/06/2006': {'temp': 17.2, 'time': datetime.time(15, 0)},
-        '01/07/2006': {'temp': 16.0, 'time': datetime.time(8, 50)},
+        '01/06/2006': {'temp': 17.2, 'time': '15:00:00'},
+        '01/07/2006': {'temp': 16.0, 'time': '08:50:00'},
     }
 
     Returns:
         A tuple contining 3 elements. Each element is a formatted output
         for task 1
-        month_avg_hottest_time (list): contains tuples of date and time str
-        most_common_hottest_time (str): value of most common hottest time
+        month_avg_hottest_time (list): contains tuples of date and time
+        most_common_hottest_time (str): the most common hottest time
         top_hottest_times (list): contains tuples of temp and date str
     >>> Example:
     (
