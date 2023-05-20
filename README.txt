@@ -54,15 +54,22 @@ Improvements planned in this version:
 ========================================================================
 How to run the code
 ========================================================================
-1. Clone this project
-2. cd into the TakeHomeTest directory
-3. Create a virtual environment by running:
+1. Clone this project:
+    `git clone https://github.com/mohak1/TakeHomeTest.git`
+2. cd into the `TakeHomeTest` directory:
+    `cd TakeHomeTest`
+3. Create a virtual environment env:
     `python3 -m venv env`
-4. Activate the virtual environment by running:
+4. Activate the virtual environment env:
     `source env/bin/activate`
-5. Install the requirements by running:
+5. Install the required pip packages:
     `pip install -r requirements.txt`
-6. Run the main.py file by using the command:
+6. Start docker daemon
+7. Start a RabbitMQ server in a docker container on port 5672:
+    `docker run -d --name rabbitmq -p 5672:5672 rabbitmq`
+8. Start the Celery worker:
+    `celery -A app.tasks worker --loglevel=info`
+9. Run the main.py file in a different terminal window:
     `python app/main.py`
 
 ========================================================================
