@@ -52,13 +52,14 @@ def convert_date_col_to_datetime(data: pd.DataFrame) -> None:
             f'Traceback:\n{err}'
         )
 
-def convert_time_col_to_datetime(data: pd.DataFrame) -> None:
+def convert_time_col_to_datetime(data: pd.DataFrame, format_='%H:%M') -> None:
     """
     Converts the values in 'Time' column in the dataframe to a datetime
     object for easy reference of time
     """
+
     try:
-        data['Time'] = pd.to_datetime(data['Time'], format='%H:%M').dt.time
+        data['Time'] = pd.to_datetime(data['Time'], format=format_).dt.time
     except ValueError as err:
         raise ce.UnSupporterdDataTypeError(
             'An unsupported value encountered in column `Time` that '
