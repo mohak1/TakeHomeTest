@@ -69,7 +69,7 @@ How to run the code
     `docker run -d --name rabbitmq -p 5672:5672 rabbitmq`
 8. Start the Celery worker:
     `celery -A app.tasks worker --loglevel=info`
-9. Run the main.py file in a different terminal window:
+9. Open a different terminal window, activate env and run main.py:
     `python app/main.py`
 
 ========================================================================
