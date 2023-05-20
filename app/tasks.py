@@ -136,7 +136,8 @@ def perform_task_2(data: ty.Dict) -> ty.List[ty.Tuple]:
             result.append((row['Date'], row['Time'].strftime('%H:%M')))
     return result
 
-def perform_task_3(data: pd.DataFrame, result: ty.List):
+@celery_app.task
+def perform_task_3(data: ty.Dict) -> ty.List[ty.Tuple]:
     """
     Forecasts “Outside Temperature” for the first 9 days of the
     next month (i.e. July), assuming that:
@@ -175,9 +176,30 @@ def perform_task_3(data: pd.DataFrame, result: ty.List):
     This limitation can handled by collecting the values until all
     the time ranges of all days (from 1st to 9th June) have been
     collected and only then proceeding with the forecast operation.
+
+    Args:
+        data (dict): The dict containing CSV data
+
+    Returns:
+        result (list): contains (date, time, temperature) tuples
+
+    >>> Example value of `result`:
+    [
+        ('01/06/2006', '15:00', 10.2),
+        ('01/07/2006', '08:50', 15.8),
+    ]
     """
+
+    result = []
+    data = pd.DataFrame(data)
+
+    data_op.convert_date_col_to_datetime(data)
+
     # converting to date obj to easily compare date ranges
     data['date_obj'] = pd.to_datetime(data['Date'], format='%d/%m/%Y')
+
+    # convert to time column to datetime
+    data_op.convert_time_col_to_datetime(data, format_='%H:%M:%S')
 
     # date objects to easily slice the dataframe rows
     june_1st = datetime.datetime.strptime('01/06/2006', '%d/%m/%Y')
@@ -211,6 +233,7 @@ def perform_task_3(data: pd.DataFrame, result: ty.List):
                     str(july_forecast[ind])
                 )
             )
+    return result
 
 def get_avg_time(time1: datetime.time, time2: datetime.time) -> datetime.time:
     """
