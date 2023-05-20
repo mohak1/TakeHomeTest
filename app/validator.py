@@ -12,15 +12,19 @@ from app import custom_exceptions as ce
 
 def check_task_1_dict_format(task_1_output: ty.Dict) -> None:
     """
-    Task 1 output is a dictionary of dictionaries where each element of
-    the dictionary is of the format:
+    Checks task 1 output dictionary where each element of the dictionary
+    is expected of the format:
         {
-            '01/06/2006': {'temp': 17.2, 'time': datetime.time(15, 0)},
-            '01/07/2006': {'temp': 16.0, 'time': datetime.time(8, 50)},
+            '01/06/2006': {'temp': 17.2, 'time': '15:00:00')},
+            '01/07/2006': {'temp': 16.0, 'time': '08:50:00')},
         }
 
-    Raises `InvalidFormatError` exception if the input dictionary is
-    not in the expected format
+    Args:
+        task_1_output (dict): output of task 1
+
+    Raises:
+        - `InvalidFormatError` exception if the input dictionary is
+        not in the expected format
     """
 
     if not isinstance(task_1_output, dict):
@@ -33,7 +37,7 @@ def check_task_1_dict_format(task_1_output: ty.Dict) -> None:
         if not isinstance(key, str):
             raise ce.InvalidFormatError(
                 'Expected the key of Task 1 output dictionaries '
-                f'to be of type `str` but it is `{type(task_1_output)}`'
+                f'to be of type `str` but it is `{type(key)}`'
             )
 
         if not isinstance(task_1_output[key], dict):
@@ -52,7 +56,7 @@ def check_task_1_dict_format(task_1_output: ty.Dict) -> None:
         if not isinstance(task_1_output[key]['temp'], numbers.Number):
             raise ce.InvalidFormatError(
                 'Expected the value of "temp" key in Task 1 output '
-                ' dictionary elements be a number but its of type '
+                'dictionary elements be a number but its of type '
                 f'`{task_1_output[key]["temp"]}`'
             )
 
@@ -61,8 +65,8 @@ def check_task_1_dict_format(task_1_output: ty.Dict) -> None:
         except ValueError as err:
             raise ce.InvalidFormatError(
                 'Expected the value of "time" key in Task 1 output '
-                ' dictionary elements be a datetime.time object but '
-                f'it is of type `{task_1_output[key]["time"]}`'
+                'dictionary elements be of type HH:MM:SS but it is of '
+                f'type `{task_1_output[key]["time"]}`'
             ) from err
 
 def check_for_expected_columns(column_names: ty.List) -> None:
@@ -73,7 +77,11 @@ def check_for_expected_columns(column_names: ty.List) -> None:
     Args:
         column_names (list): List column names fetched from URL
 
+    Raises:
+        - `DataValidationError` exception if the column names do not
+        contain all the names that are expected
     """
+
     column_names = set(column_names)
     for name in config.EXPECTED_COL_NAMES:
         if name not in column_names:
@@ -86,13 +94,12 @@ def check_for_expected_columns(column_names: ty.List) -> None:
 def validate_dir_path(path: str) -> None:
     """
     Checks if the path points to an actual directory on disk
-    Raises `NotADirectoryError` if the path is not a directory
 
     Args:
         path (str): the path of the directory
 
-    Returns:
-        None
+    Raises:
+        - `NotADirectoryError` if the path is not a directory
     """
 
     if not os.path.isdir(path):

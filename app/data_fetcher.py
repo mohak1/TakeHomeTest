@@ -26,7 +26,7 @@ def get_data_stream(url: str) -> ty.Iterator:
         Iterator: An iterator yielding the data stream
 
     Raises:
-        requests.exceptions.RequestException: If an error occurs while
+        - `requests.exceptions.RequestException`: If an error occurs while
         making a GET request to the specified URL
     """
     return requests.get(url, stream=True, timeout=60)
@@ -42,12 +42,18 @@ def get_data_chunk(url: str) -> pd.DataFrame:
 
     Yields:
         pd.DataFrame: A Pandas DataFrame containing the data chunk
+
+    Raises:
+        - `requests.exceptions.RequestException` if data stream cannot be
+            fetched from the URL
+        - `DataLoadingError` if the data cannot be locaded as CSV
+        - `DataValidationError` if CSV data is not correctly formatted
     """
     try:
         data_stream = get_data_stream(url)
     except requests.exceptions.RequestException as err:
         logging.error('Error in fetching from URL\n%s', str(err), exc_info=True)
-        return pd.DataFrame()
+        raise requests.exceptions.RequestException from err
 
     reader = csv.reader(data_stream.iter_lines(
         chunk_size=config.CHUNK_SIZE, decode_unicode=True)
@@ -76,8 +82,7 @@ def get_data_chunk(url: str) -> pd.DataFrame:
             yield dframe
     except (csv.Error, ValueError) as err:
         logging.error('Error in handling CSV\n%s', str(err), exc_info=True)
-        return pd.DataFrame()
-
+        raise ce.DataLoadingError from err
     except ce.DataValidationError as err:
         logging.error('Column mismatch in dataframe\n%s', str(err), exc_info=True)
-        return pd.DataFrame()
+        raise ce.DataValidationError from err
