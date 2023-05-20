@@ -3,9 +3,11 @@ import os
 import sys
 import unittest
 
-sys.path.append('./app')
+sys.path.append('.')
 
-import file_operations as file_op
+# pylint: disable=wrong-import-position
+
+from app import file_operations as file_op
 
 # pylint: disable=missing-class-docstring
 # pylint: disable=missing-function-docstring
