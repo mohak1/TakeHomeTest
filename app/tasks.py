@@ -83,7 +83,8 @@ def perform_task_1(data: ty.Dict, col_name, result: ty.Dict) -> ty.Dict:
             result[date] = {'time':max_temp_time, 'temp':max_temp_val}
     return result
 
-def perform_task_2(data: pd.DataFrame, result: ty.List) -> None:
+@celery_app.task
+def perform_task_2(data: ty.Dict) -> ty.List[ty.Tuple]:
     """
     Collects all the Dates and Times where the “Hi Temperature” value
     is in range [21.3, 23.3] degrees (both inclusive) or the
@@ -94,10 +95,28 @@ def perform_task_2(data: pd.DataFrame, result: ty.List) -> None:
     and their respective temperature ranges are read from `config.py`
     The date range (i.e. first 9 days of June) is also read from
     `config.py`
+
+    Args:
+        data (dict): The dict containing CSV data
+
+    Returns:
+        result (list): contains (date, time) tuples
+
+    >>> Example value of `result`:
+    [
+        ('01/06/2006', '15:00'),
+        ('01/07/2006', '08:50'),
+    ]
     """
+
+    result = []
+    data = pd.DataFrame(data)
 
     # convert to date obj to easily compare date ranges
     data['date_obj'] = pd.to_datetime(data['Date'], format='%d/%m/%Y')
+
+    # convert to time column to datetime
+    data_op.convert_time_col_to_datetime(data, format_='%H:%M:%S')
 
     # gather rows in this data chunk that belong to task 2 date ranges
     rows_in_date_range = data[
@@ -115,6 +134,7 @@ def perform_task_2(data: pd.DataFrame, result: ty.List) -> None:
         # store the Date and Time value for the rows in the value range
         for _, row in rows_in_temp_range.iterrows():
             result.append((row['Date'], row['Time'].strftime('%H:%M')))
+    return result
 
 def perform_task_3(data: pd.DataFrame, result: ty.List):
     """
