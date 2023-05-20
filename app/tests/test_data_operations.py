@@ -3,12 +3,15 @@ import datetime
 import sys
 import unittest
 
-sys.path.append('./app')
+sys.path.append('.')
 
-import custom_exceptions as ce
-import data_operations as data_op
+# pylint: disable=wrong-import-position
+
 import pandas as pd
 from pandas.testing import assert_frame_equal
+
+from app import custom_exceptions as ce
+from app import data_operations as data_op
 
 # pylint: disable=missing-class-docstring
 # pylint: disable=missing-function-docstring
@@ -253,10 +256,10 @@ class TestValidator(unittest.TestCase):
 
     def test_formatted_task_1_results_no_error_raised(self):
         input_data = {
-            '31/05/2006': {'time': datetime.time(14, 40), 'temp': 15.5},
-            '01/06/2006': {'time': datetime.time(15, 0), 'temp': 17.2},
-            '02/06/2006': {'time': datetime.time(13, 20), 'temp': 17.7},
-            '03/06/2006': {'time': datetime.time(14, 50), 'temp': 19.6},
+            '31/05/2006': {'time': '14:40:00', 'temp': 15.5},
+            '01/06/2006': {'time': '15:00:00', 'temp': 17.2},
+            '02/06/2006': {'time': '13:20:00', 'temp': 17.7},
+            '03/06/2006': {'time': '14:50:00', 'temp': 19.6},
         }
         expected = (
             [('05/2006', '14:40'), ('06/2006', '14:30')],
