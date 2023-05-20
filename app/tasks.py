@@ -311,8 +311,8 @@ def hottest_time_with_hightest_freq(result: ty.Dict) -> str:
         dictionary of dictionaries where each element of the dictionary
         is of the format:
         {
-            '01/06/2006': {'temp': 17.2, 'time': datetime.time(15, 0)},
-            '01/07/2006': {'temp': 16.0, 'time': datetime.time(8, 50)},
+            '01/06/2006': {'temp': 17.2, 'time': '15:00:00'},
+            '01/07/2006': {'temp': 16.0, 'time': '08:50:00'},
         }
 
     Returns:
@@ -320,10 +320,10 @@ def hottest_time_with_hightest_freq(result: ty.Dict) -> str:
     """
     freq_count = defaultdict(int)
 
-    # count the frequency of each 'time' object
+    # count the frequency of each 'time' value
     for ele in result:
-        time_obj = result[ele]['time']
-        freq_count[time_obj] += 1
+        time = result[ele]['time']
+        freq_count[time] += 1
 
     max_freq = 0
     time_with_max_freq = None
@@ -334,7 +334,7 @@ def hottest_time_with_hightest_freq(result: ty.Dict) -> str:
             max_freq = freq_count[time]
             time_with_max_freq = time
 
-    time_val = time_with_max_freq.strftime('%H:%M')
+    time_val = time_with_max_freq[0:5]
     return time_val
 
 def top_hottest_times(result: ty.Dict, count: int) -> ty.List[ty.Tuple]:
