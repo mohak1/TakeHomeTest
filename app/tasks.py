@@ -21,7 +21,7 @@ celery_app = celery.Celery(
 # usage: `celery -A app.tasks worker --loglevel=info`
 
 @celery_app.task
-def perform_task_1(data: ty.Dict, col_name: str, result: ty.Dict) -> ty.Dict:
+def perform_task_1(data: ty.Dict, result: ty.Dict) -> ty.Dict:
     """
     Task 1 consists of the following prompts:
         a. Compute the average time of hottest daily temperature (over month)
@@ -45,7 +45,6 @@ def perform_task_1(data: ty.Dict, col_name: str, result: ty.Dict) -> ty.Dict:
 
     Args:
         data (dict): The dict containing CSV data
-        col_name (str): Column name on which the task 1 is to be performed
         result (dict): Contains the result of task1 on previous chunks
 
     Returns:
@@ -63,7 +62,7 @@ def perform_task_1(data: ty.Dict, col_name: str, result: ty.Dict) -> ty.Dict:
 
     # gather all unique dates
     unique_dates = data['Date'].unique()
-
+    col_name = config.T1_COL_NAME
     # for each date, get the max value for `col_name` and the its time
     for date in unique_dates:
         temp_and_time_on_date = data.loc[
