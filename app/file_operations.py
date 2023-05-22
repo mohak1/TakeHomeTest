@@ -123,7 +123,6 @@ def save_task_1_to_disk(
     Opens `file_name` at `dir_path` with write mode (`w`) and replaces
     the contents of the file. Creates a new file if the file name
     doesn't exist on the path.
-
     Writes the results for part a, b and c of task 1 to the file.
 
     Args:
@@ -133,6 +132,9 @@ def save_task_1_to_disk(
         top_count_value: the number of top entires in result 1 c
         dir_path (str): path of the dir where file is to be saved
         file_name (str): name of the file to be saved
+
+    Raises:
+        - `OSError` if an error occurs in reading or writing file
     """
 
     task_1_a_heading = 'Average time of hottest daily temperature (over month)'
