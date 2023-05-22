@@ -9,9 +9,11 @@ import datetime
 URL = 'http://www.fifeweather.co.uk/cowdenbeath/200606.csv'
 CHUNK_SIZE = 1024
 OUTPUT_DIR = './output'
-T1_FILE_NAME = 'task1.txt'
-T2_FILE_NAME = 'task2.txt'
-T3_FILE_NAME = 'task3.txt'
+T1_FILE_NAME = 'task1'
+T2_FILE_NAME = 'task2'
+T3_FILE_NAME = 'task3'
+FILE_EXTENSION = '.txt'
+SAVE_CKPT_EVERY = 1 # save result checkpoint after every 1 iteration
 
 # column names that are required in the CSV file for the tasks
 EXPECTED_COL_NAMES = [
