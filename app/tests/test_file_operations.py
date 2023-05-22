@@ -16,6 +16,27 @@ from app import file_operations as file_op
 
 class TestValidator(unittest.TestCase):
 
+    def setUp(self):
+        test_dir = './app/tests/test_output'
+        file_1 = config.T1_FILE_NAME + '-ckpt-1'
+        file_2 = config.T2_FILE_NAME + '-ckpt-1'
+        file_3 = config.T3_FILE_NAME + '-ckpt-1'
+        t1_data = {
+            '01/06/2006': {'temp': 17.2, 'time': '15:00:00'},
+            '01/07/2006': {'temp': 16.0, 'time': '08:50:00'},
+        }
+        t2_data = [
+            ('01/06/2006', '15:00'),
+            ('01/07/2006', '08:50'),
+        ]
+        t3_data = [
+            ('01/06/2006', '15:00', 10.2),
+            ('01/07/2006', '08:50', 15.8),
+        ]
+        file_op.save_as_pkl(t1_data, file_1, test_dir)
+        file_op.save_as_pkl(t2_data, file_2, test_dir)
+        file_op.save_as_pkl(t3_data, file_3, test_dir)
+
     def test_get_full_path_no_trailing_slash(self):
         dir_path = 'a/b/c'
         file_name = 'd.txt'
@@ -59,9 +80,9 @@ class TestValidator(unittest.TestCase):
 
     def test_save_as_pkl_no_error_raised(self):
         test_dir = './app/tests/test_output'
-        file_1 = config.T1_FILE_NAME + '-ckpt-1'
-        file_2 = config.T2_FILE_NAME + '-ckpt-1'
-        file_3 = config.T3_FILE_NAME + '-ckpt-1'
+        file_1 = config.T1_FILE_NAME + '-ckpt-1000'
+        file_2 = config.T2_FILE_NAME + '-ckpt-1000'
+        file_3 = config.T3_FILE_NAME + '-ckpt-1000'
         t1_data = {
             '01/06/2006': {'temp': 17.2, 'time': '15:00:00'},
             '01/07/2006': {'temp': 16.0, 'time': '08:50:00'},
