@@ -84,9 +84,7 @@ def main() -> None:
             logging.error('Data transformation error\n%s', str(err), exc_info=True)
             sys.exit(1)
 
-        chunk_result_t1 = tasks.perform_task_1.delay(
-            data_chunk, config.T1_COL_NAME, task_1_res
-        )
+        chunk_result_t1 = tasks.perform_task_1.delay(data_chunk, task_1_res)
         chunk_result_t2 = tasks.perform_task_2.delay(data_chunk)
         chunk_result_t3 = tasks.perform_task_3.delay(data_chunk)
 

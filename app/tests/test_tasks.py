@@ -40,7 +40,7 @@ class TestTasks(unittest.TestCase):
             '03/06/2006': {'time': datetime.time(10, 20), 'temp': 18.4},
             '04/06/2006': {'time': datetime.time(10, 50), 'temp': 18.4}
         }
-        tasks.perform_task_1(input_data, 'Outside Temperature', output)
+        tasks.perform_task_1(input_data, output)
         self.assertEqual(output, expected)
 
     def test_perform_task_2(self):
