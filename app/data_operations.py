@@ -2,6 +2,7 @@
 Contains functions that are used for performing operations on data
 including cleaning, formatting, etc
 """
+
 import logging
 import typing as ty
 
@@ -9,9 +10,10 @@ import pandas as pd
 
 from app import config
 from app import custom_exceptions as ce
-from app import tasks, validator
+from app import decorators, tasks, validator
 
 
+@decorators.log_method
 def transform_data(data: pd.DataFrame) -> ty.Dict:
     """
     Converts 'Date' and 'Time' column to datetime while keeping the
@@ -36,6 +38,7 @@ def transform_data(data: pd.DataFrame) -> ty.Dict:
     remove_rows_where_data_is_na(data)
     return data.to_dict()
 
+@decorators.log_method
 def convert_date_col_to_datetime(data: pd.DataFrame) -> None:
     """
     Converts the values in 'Date' column in the dataframe to a datetime
@@ -59,6 +62,7 @@ def convert_date_col_to_datetime(data: pd.DataFrame) -> None:
             f'Traceback:\n{err}'
         )
 
+@decorators.log_method
 def convert_time_col_to_datetime(
         data: pd.DataFrame, format_: str='%H:%M'
 ) -> None:
@@ -83,6 +87,7 @@ def convert_time_col_to_datetime(
             f'Traceback:\n{err}'
         )
 
+@decorators.log_method
 def convert_column_data_to_numeric(data: pd.DataFrame) -> None:
     """
     Converts the values in `col_name` to numeric type
@@ -105,6 +110,7 @@ def convert_column_data_to_numeric(data: pd.DataFrame) -> None:
             f'Traceback:\n{err}'
         )
 
+@decorators.log_method
 def remove_cols_that_are_not_needed(data: pd.DataFrame) -> None:
     """
     Removes columns from the dataframe that are not used in any of the
@@ -118,6 +124,7 @@ def remove_cols_that_are_not_needed(data: pd.DataFrame) -> None:
         if col_name not in config.EXPECTED_COL_NAMES:
             data.drop(col_name, axis=1, inplace=True)
 
+@decorators.log_method
 def remove_rows_where_data_is_na(data: pd.DataFrame) -> None:
     """
     Removes rows where value for any column is 'na'
@@ -128,6 +135,7 @@ def remove_rows_where_data_is_na(data: pd.DataFrame) -> None:
 
     data = data.dropna(inplace=True)
 
+@decorators.log_method
 def formatted_task_1_results(
     result: ty.Dict, count: int
 ) -> ty.Tuple[ty.List[ty.Tuple], str, ty.List[ty.Tuple]]:
