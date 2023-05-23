@@ -103,16 +103,19 @@ def main() -> None:
 
     file_op.compile_checkpoints_to_generate_output()
 
+
 if __name__ == '__main__':
-
     parser = argparse.ArgumentParser()
-
-    # for running tests locally
-    parser.add_argument(
-        '--run_tests',
-        action='store_true',
-        help='Runs unit tests in the tests directory'
-    )
+    parser.add_argument('--url', help='URL to be used in the script')
+    parser.add_argument('--output_dir', help='Path of output directory')
+    parser.add_argument('--t1_file_name', help='Name of T1 output file')
+    parser.add_argument('--t2_file_name', help='Name of T2 output file')
+    parser.add_argument('--t3_file_name', help='Name of T3 output file')
+    parser.add_argument('--chunk_size', help='Chunk size for download')
+    parser.add_argument('--ckpt_freq', help='Frequency of saving checkpoint')
+    parser.add_argument('--log_level', help='Logging level')
+    parser.add_argument('--run_tests', action='store_true',
+        help='Runs unit tests on default settings, ignores any other flag')
 
     args = parser.parse_args()
 
@@ -122,4 +125,20 @@ if __name__ == '__main__':
         runner = unittest.TextTestRunner()
         runner.run(suite)
     else:
+        if args.url:
+            config.URL = args.url
+        if args.output_dir:
+            config.OUTPUT_DIR = args.output_dir
+        if args.t1_file_name:
+            config.T1_FILE_NAME = args.t1_file_name
+        if args.t2_file_name:
+            config.T2_FILE_NAME = args.t2_file_name
+        if args.t3_file_name:
+            config.T3_FILE_NAME = args.t3_file_name
+        if args.chunk_size:
+            config.CHUNK_SIZE = args.chunk_size
+        if args.ckpt_freq:
+            config.SAVE_CKPT_EVERY = args.ckpt_freq
+        if args.log_level:
+            config.LOGGING_LEVEL = args.log_level
         main()
