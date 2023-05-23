@@ -1,6 +1,6 @@
 """The entry point file of the script"""
+
 import argparse
-import logging
 import sys
 import unittest
 
@@ -8,14 +8,15 @@ sys.path.append('.') # to make 'app' folder visible from the base dir
 
 # pylint: disable=wrong-import-position
 from app import config
-from app import custom_exceptions as ce
 from app import data_fetcher as data_f
 from app import data_operations as data_op
+from app import decorators
 from app import file_operations as file_op
 from app import tasks, validator
 
-logging.basicConfig(level=logging.INFO)
 
+@decorators.exception_handler
+@decorators.log_method
 def main() -> None:
     """
     The entry point function of the script.
@@ -63,32 +64,24 @@ def main() -> None:
     to these lists.
 
     Finally, the resutls of the three tasks are written to the disk
+    The execution of the script is terminated if an error occurs
     """
 
-    logging.info('starting execution')
-    try:
-        validator.validate_dir_path(config.OUTPUT_DIR)
-    except NotADirectoryError as err:
-        logging.error('Invalid directory Path\n%s', str(err), exc_info=True)
-        sys.exit(1)
+    validator.validate_dir_path(config.OUTPUT_DIR)
 
     # for tracking the result of tasks on data chunks
     task_1_res = {}
     task_2_res = []
     task_3_res = []
 
+    num = 0
     for num, data_chunk in enumerate(data_f.get_data_chunk(config.URL)):
-        try:
-            data_chunk = data_op.transform_data(data_chunk)
-        except ce.UnSupporterdDataTypeError as err:
-            logging.error('Data transformation error\n%s', str(err), exc_info=True)
-            sys.exit(1)
+        data_chunk = data_op.transform_data(data_chunk)
 
         chunk_result_t1 = tasks.perform_task_1.delay(data_chunk, task_1_res)
         chunk_result_t2 = tasks.perform_task_2.delay(data_chunk)
         chunk_result_t3 = tasks.perform_task_3.delay(data_chunk)
 
-        # TODO: handle exceptions raised from .get()
         task_1_res = chunk_result_t1.get()
         task_2_res.extend(chunk_result_t2.get())
         task_3_res.extend(chunk_result_t3.get())
@@ -108,11 +101,7 @@ def main() -> None:
         file_op.save_checkpoints(task_1_res, task_2_res, task_3_res, num+1)
         task_1_res = task_2_res = task_3_res = None
 
-    logging.info('starting save operation')
-
     file_op.compile_checkpoints_to_generate_output()
-
-    logging.info('task completed')
 
 if __name__ == '__main__':
 
