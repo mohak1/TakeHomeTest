@@ -2,6 +2,7 @@
 This file contains functions that perform operations to fetch data from
 the internet
 """
+
 import csv
 import logging
 import typing as ty
@@ -12,9 +13,10 @@ import requests
 
 from app import config
 from app import custom_exceptions as ce
-from app import validator
+from app import decorators, validator
 
 
+@decorators.log_method
 def get_data_stream(url: str) -> ty.Iterator:
     """
     Returns a GET stream of the specified URL
@@ -31,6 +33,7 @@ def get_data_stream(url: str) -> ty.Iterator:
     """
     return requests.get(url, stream=True, timeout=60)
 
+@decorators.log_method
 def get_data_chunk(url: str) -> pd.DataFrame:
     """
     Retrieves data chunks from the specified URL. Reads the data

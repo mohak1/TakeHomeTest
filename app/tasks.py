@@ -10,6 +10,7 @@ from dateutil.relativedelta import relativedelta
 
 from app import config
 from app import data_operations as data_op
+from app import decorators
 
 celery_app = celery.Celery(
     'tasks',
@@ -21,6 +22,7 @@ celery_app = celery.Celery(
 # usage: `celery -A app.tasks worker --loglevel=info`
 
 @celery_app.task
+@decorators.log_method
 def perform_task_1(data: ty.Dict, result: ty.Dict) -> ty.Dict:
     """
     Task 1 consists of the following prompts:
@@ -83,6 +85,7 @@ def perform_task_1(data: ty.Dict, result: ty.Dict) -> ty.Dict:
     return result
 
 @celery_app.task
+@decorators.log_method
 def perform_task_2(data: ty.Dict) -> ty.List[ty.Tuple]:
     """
     Collects all the Dates and Times where the “Hi Temperature” value
@@ -136,6 +139,7 @@ def perform_task_2(data: ty.Dict) -> ty.List[ty.Tuple]:
     return result
 
 @celery_app.task
+@decorators.log_method
 def perform_task_3(data: ty.Dict) -> ty.List[ty.Tuple]:
     """
     Forecasts “Outside Temperature” for the first 9 days of the
@@ -234,6 +238,7 @@ def perform_task_3(data: ty.Dict) -> ty.List[ty.Tuple]:
             )
     return result
 
+@decorators.log_method
 def get_avg_time(time1: datetime.time, time2: datetime.time) -> datetime.time:
     """
     Computes and returns the average time of two datetime.time objects
@@ -255,6 +260,7 @@ def get_avg_time(time1: datetime.time, time2: datetime.time) -> datetime.time:
 
     return datetime.time(avg_hours, avg_minutes)
 
+@decorators.log_method
 def avg_time_of_hottest_daily_temp(result: ty.Dict) -> ty.List[ty.Tuple]:
     """
     Loops over the elements of the input dictionary. For each
@@ -296,6 +302,7 @@ def avg_time_of_hottest_daily_temp(result: ty.Dict) -> ty.List[ty.Tuple]:
     ]
     return values_as_list
 
+@decorators.log_method
 def hottest_time_with_hightest_freq(result: ty.Dict) -> str:
     """
     Loops over the elements of the input dictionary. Counts the
@@ -336,6 +343,7 @@ def hottest_time_with_hightest_freq(result: ty.Dict) -> str:
     time_val = time_with_max_freq[0:5]
     return time_val
 
+@decorators.log_method
 def top_hottest_times(result: ty.Dict, count: int) -> ty.List[ty.Tuple]:
     """
     Sorts the `result` dictionary by both 'temp' and date (key).

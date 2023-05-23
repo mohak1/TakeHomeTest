@@ -1,15 +1,18 @@
 """
 Contains functions that perform validation on data, argument values, etc
 """
+
 import datetime
-import os
 import numbers
+import os
 import typing as ty
 
 from app import config
 from app import custom_exceptions as ce
+from app import decorators
 
 
+@decorators.log_method
 def check_task_1_dict_format(task_1_output: ty.Dict) -> None:
     """
     Checks task 1 output dictionary where each element of the dictionary
@@ -69,6 +72,7 @@ def check_task_1_dict_format(task_1_output: ty.Dict) -> None:
                 f'type `{task_1_output[key]["time"]}`'
             ) from err
 
+@decorators.log_method
 def check_for_expected_columns(column_names: ty.List) -> None:
     """
     Verifies that the column names contain all the values that are
@@ -91,6 +95,7 @@ def check_for_expected_columns(column_names: ty.List) -> None:
                 f'Fetched columns: {column_names}'
             )
 
+@decorators.log_method
 def validate_dir_path(path: str) -> None:
     """
     Checks if the path points to an actual directory on disk

@@ -7,8 +7,10 @@ import typing as ty
 
 from app import config
 from app import data_operations as data_op
+from app import decorators
 
 
+@decorators.log_method
 def get_full_path(dir_path: str, file_name: str):
     """
     Creates full path from directory path and file name
@@ -27,6 +29,7 @@ def get_full_path(dir_path: str, file_name: str):
         full_path = f'{dir_path}/{file_name}'
     return full_path
 
+@decorators.log_method
 def save_checkpoints(
     t1_result: ty.Dict,
     t2_result: ty.List[ty.Tuple],
@@ -56,6 +59,7 @@ def save_checkpoints(
     t3_file_name = config.T3_FILE_NAME + f'-ckpt-{ckpt_num}'
     save_as_pkl(t3_result, t3_file_name, config.OUTPUT_DIR)
 
+@decorators.log_method
 def save_as_pkl(
     data: ty.Union[ty.Dict, ty.List],
     file_name: str,
@@ -83,6 +87,7 @@ def save_as_pkl(
         logging.error('Error during saving `%s`\n%s', file_name, str(err))
         raise OSError from err
 
+@decorators.log_method
 def append_lines_to_file(
     lines: ty.List, dir_path: str, file_name: str
 ) -> None:
@@ -111,6 +116,7 @@ def append_lines_to_file(
             str(err), exc_info=True)
         raise OSError from err
 
+@decorators.log_method
 def save_task_1_to_disk(
     task_1_a_result: ty.List[ty.Tuple],
     task_1_b_result: str,
@@ -165,6 +171,7 @@ def save_task_1_to_disk(
         logging.error('Error during file write\n%s', str(err), exc_info=True)
         raise OSError from err
 
+@decorators.log_method
 def get_task_checkpoint_file_names() -> ty.Tuple[ty.List, ty.List, ty.List]:
     """
     Returns a tuple of lists containing task checkpoint file names
@@ -201,6 +208,7 @@ def get_task_checkpoint_file_names() -> ty.Tuple[ty.List, ty.List, ty.List]:
 
     return task_1_ckpts, task_2_ckpts, task_3_ckpts
 
+@decorators.log_method
 def gather_task_1_results(t1_ckpts: ty.List[str]) -> ty.Dict:
     """
     Gathers task 1 result dict from the given checkpoint file names.
@@ -228,6 +236,7 @@ def gather_task_1_results(t1_ckpts: ty.List[str]) -> ty.Dict:
 
     return task_1_output
 
+@decorators.log_method
 def gather_and_save_task_results(ckpts: ty.List[str], task_num: int) -> None:
     """
     Gathers and saves the results for task 2 or 3 (depeding on args)
@@ -257,6 +266,7 @@ def gather_and_save_task_results(ckpts: ty.List[str], task_num: int) -> None:
         file_name = name.split('-ckpt-')[0]
         append_lines_to_file(lines, config.OUTPUT_DIR, file_name)
 
+@decorators.log_method
 def format_task_result_as_lines(
         task_result: ty.List[ty.Tuple], task_num: int
 ) -> ty.List[str]:
@@ -280,6 +290,7 @@ def format_task_result_as_lines(
         lines.append(line)
     return lines
 
+@decorators.log_method
 def compile_checkpoints_to_generate_output() -> None:
     """
     Compiles the checkpoint files to generate the output of task1,2,3
