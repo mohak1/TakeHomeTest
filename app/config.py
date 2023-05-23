@@ -2,9 +2,8 @@
 This file contains constants and other configuration values that are
 used in the code
 """
-import datetime
 
-# TODO: replace column name string values with ENUMs
+import datetime
 
 URL = 'http://www.fifeweather.co.uk/cowdenbeath/200606.csv'
 CHUNK_SIZE = 1024
@@ -14,6 +13,7 @@ T2_FILE_NAME = 'task2'
 T3_FILE_NAME = 'task3'
 FILE_EXTENSION = '.txt'
 SAVE_CKPT_EVERY = 1 # save result checkpoint after every 1 iteration
+LOGGING_LEVEL = 'INFO'
 
 # column names that are required in the CSV file for the tasks
 EXPECTED_COL_NAMES = [
