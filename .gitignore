@@ -4,3 +4,4 @@
 /env
 .vscode
 /app/tests/test_output/*.txt
+*.pkl

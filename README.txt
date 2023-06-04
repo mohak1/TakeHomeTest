@@ -1,76 +1,102 @@
 ========================================================================
+New in version 2
+========================================================================
+1. Task distribution with worker threads using Celery and RabbitMQ
+
+2. Saving intermediate progress as checkpoints to disk
+
+3. Logging method execution flow to make debugging easier
+
+4. The ability to change config values using command line arguments
+
+========================================================================
 How to run the code
 ========================================================================
-1. Clone this project
-2. cd into the TakeHomeTest directory
-3. Create a virtual environment by running:
+1. Clone this project:
+    `git clone https://github.com/mohak1/TakeHomeTest.git`
+2. cd into the `TakeHomeTest` directory:
+    `cd TakeHomeTest`
+3. Create a virtual environment env:
     `python3 -m venv env`
-4. Activate the virtual environment by running:
+4. Activate the virtual environment env:
     `source env/bin/activate`
-5. Install the requirements by running:
+5. Install the required pip packages:
     `pip install -r requirements.txt`
-6. Run the main.py file by using the command:
+6. Start docker daemon
+7. Start a RabbitMQ server in a docker container on port 5672:
+    `docker run -d --name rabbitmq -p 5672:5672 rabbitmq`
+8. Start the Celery worker:
+    `celery -A app.tasks worker --loglevel=info`
+9. Open a different terminal window, activate env and run main.py:
     `python app/main.py`
 
 ========================================================================
 Design Choices and Decisions
 ========================================================================
+1. Distributing task execution using Celery and RabbitMQ
+    The tasks are independent of each other and certainly benefit from
+    parallel execution. The performance improvements will be significant
+    the tasks are run on larger data chunks or if the tasks are updated
+    and made more complex.
 
-1. Downloading the data in chunks from the URL
-    This decisions is influenced by the initial conversation that the
-    role involves working with data that can be Petabites in magnitude.
-    Since that's the case, the approach of downloading the data chunk by
-    chunk enables this script (or at least a part of it) to be used
-    for data thats very large and can't fit in the memory.
+2. The choice between worker threads and processes for Celery
+    In the current implementation, Celery is using worker threads
+    instead of worker processes even though the threads are restricted
+    by GIL in CPython.
+    The average runtime with Celery worker threads was `0.8738 sec` and
+    with worker processes was `1.6535 sec` (average of 5 runs each).
+    The worker processes were slower than threads, even though they
+    had not GIL restriction and achieved true parallelism. This could
+    be because the time required to set up memory spaces for processes
+    if far greater than the time required to complete the tasks. Hence
+    threads offer better performance and are chosen as Celery workers.
 
-    Also this way we have a better fault isolation mechanism. If
-    something unexpected happens during the processing of one of one
-    chunk, we can either halt the script or save a checkpoint file with
-    all the current progress before terminating the script. However,
-    fault tolerance is not implemented in the current version of the
-    code.
+3. Catching exceptions in main() using a decorator
+    Since the error handling mechanism is the same for all the raised
+    exceptions in main(), i.e. exiting the script with sys.exit(),
+    using a decorator for exceptions is a lot cleaner approach.
+    If different exceptions were to be handled differently, using
+    multiple try-except blocks in main() woud have been the most
+    approapriate choice.
 
-2. Using Pandas dataframes
-    The decision to use pandas dataframes for performing the operations
-    on the CSV data is inspired by the idea of having very large data.
-    Operations performed using Pandas inbuilt methods are significantly
-    faster due to its CPython implementation. Hence, it can help in
-    achieving massive performance gains when dealing with large data.
-
-3. The use of GitHub Actions was a way of ensuring the consistency of
-    the script. The tests execute when Pull Requests are created and
-    can identify failing test cases without the need of merging into
-    the branch.
+4. Saving checkpoints as pickle binary files rahter than text files
+    This is because pickle files can store data structures instead of
+    just text. This removes the intermediate step of converting the
+    data structure values to strings (when saving checkpoints) and
+    converting strings to data structures (when reading checkpoints).
+    Also, binary files are more compact and require less space on the
+    disk then text files.
 
 ========================================================================
 Future considerations and improvements
 ========================================================================
-1. Since the tasks (Task1, Task2, Task3) are unrelated and independent
-    from each other, they can be processed separately.
-    I wanted to try unloading these tasks with Celery using RabbitMQ
-    but ran out of time.
+1. Solving Task 1 using SQL
+    Currently, all Task 1 checkpoints are gathered in one dictionary
+    to compute the results for subtasks a, b, and c.  This is because
+    the frequency of occurrence of different temperatures and date
+    values is needed to answer these subtasks.
+    By storing the task 1 checkpoints in an SQL table, these subtasks
+    can be easily answered using SQL queries. This will also improve
+    the performance.
 
-2. In order to make this script highly customisable, I wanted to add
-    multiple command line arguments using argparse for changing almost
-    every variable in config.py
-    The only trouble with this approach was that it required a number
-    of validator methods to ensure they are of the expected type.
-    I tried to designed this script in a way where it could either be
-    used in a loop (processing different URLs and saving them in
-    different files) by passing different command line arguments.
-    Unfortunately the script didn't quite reach there.
+2. A step to look for missing checkpoints and generate them
+    The current implementation creates the checkpoint files after a
+    fixed number of data chunks are processed. These checkpoints are
+    later used for generating the output.
+    When operating on large data, the code will generate a lot of
+    checkpoint files and there is a possibility that a couple of files
+    might get corrupted/deleted due to disk errors. Hence the script
+    should have a step to verify that all the checkponits are present
+    before generating the final output using these checkpoints.
+    In addition, a step to download these missing checkpoints would also
+    make the script very robust.
 
-3. An important considerations while designing this script was the size
-    of the data. Even though the current script does not download the
-    entire file at once and neither does it make deepcopies of the data,
-    it still stores the intermediate outputs in the memory at all times.
-    In the main method, `task_1_output`, `task_2_output`, `task_3_output`
-    variables are used to store the output of tasks. This is problematic
-    as its likely that these variables can grow in size and, if the
-    data is large enough, can easily fill up the entire available memory.
-    To solve this, there can be a mechanism to save 'checkpoints' after
-    a number of iterations (or depending on the variable size).
-    This would help in avoiding memory error.
-
-4. The script can certainly benefit from more logging. Also adding more
-    tests would be beneficial, specially ones with edge cases.
+3. Caching on GitHub Actions to improve CI time
+    By default, GitHub deletes all the resources after the completion
+    of a CI/CD action. Due to this, every time a Git Action is run, the
+    requirements are downloaded and installed. While this is perfectly
+    fine when the dependencies are light, this can become a time
+    consuming step as the dependencies grow.
+    One solution is to cache the downloaded pip wheels. But implementing
+    caching on GitHub Actions can be a bit complicated, so it is a good
+    option when downloading dependencies starts taking very long.

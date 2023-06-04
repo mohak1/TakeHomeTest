@@ -1,19 +1,22 @@
 """The entry point file of the script"""
+
 import argparse
-import logging
+import sys
 import unittest
 
-import sys
-import config
-import data_fetcher as data_f
-import data_operations as data_op
-import file_operations as file_op
-import custom_exceptions as ce
-import tasks
-import validator
+sys.path.append('.') # to make 'app' folder visible from the base dir
 
-logging.basicConfig(level=logging.INFO)
+# pylint: disable=wrong-import-position
+from app import config
+from app import data_fetcher as data_f
+from app import data_operations as data_op
+from app import decorators
+from app import file_operations as file_op
+from app import tasks, validator
 
+
+@decorators.exception_handler
+@decorators.log_method
 def main() -> None:
     """
     The entry point function of the script.
@@ -27,12 +30,13 @@ def main() -> None:
 
     Each transformed data chunk is passed to the three task functions.
     These functions perform their respective analysis on the data.
-    Output dictionaries (one for each task, declared outside the loop)
-    are used to keep track of the result of performing the task on each
-    data chunk. These dictionaries are passed as a parameter to each
-    task function so that the task functions have access to the result
-    of previous operations. This is vital to ensure the correctness of
-    the results partial data is passed in each chunk.
+
+    A data structure (dict for task1 and list for task2 and task3) is
+    used to keep track of the output of each task on the data chunks.
+    These dictionary for task1 is passed as a parameter to the
+    `perform_task_1` method so that the method has access to the output
+    of task1 on previous data chunks. This is vital to ensure the
+    correctness of the final result of task1.
 
     Example:
         Task to find the highest temperature of the day
@@ -51,67 +55,67 @@ def main() -> None:
         -> Max temperature on 01/06/2006 in chunk = 10
         -> Task output dict: {'01/06/2006': 23}
 
-    Hence the task functions needs to have access to the result of the
+    Hence the task1 function needs to have access to the result of the
     previous operations in order to ensure the correctness of the result
     until all the chunks are processed.
 
-    The results are written to a file on the disk
+    For task2 and task3, a list is maintatined to store the results for
+    each of these task results. The result of each data chunk is added
+    to these lists.
+
+    Finally, the resutls of the three tasks are written to the disk
+    The execution of the script is terminated if an error occurs
     """
-    logging.info('starting execution')
-    try:
-        validator.validate_dir_path(config.OUTPUT_DIR)
-    except NotADirectoryError as err:
-        logging.error('Invalid directory Path\n%s', str(err), exc_info=True)
-        sys.exit(1)
 
-    # output dictionaries for tracking the output of tasks
-    task_1_output = {}
-    task_2_output = []
-    task_3_output = []
+    validator.validate_dir_path(config.OUTPUT_DIR)
 
-    for data_chunk in data_f.get_data_chunk(config.URL):
+    # for tracking the result of tasks on data chunks
+    task_1_res = {}
+    task_2_res = []
+    task_3_res = []
 
-        try:
-            data_op.transform_data(data_chunk)
-        except ce.UnSupporterdDataTypeError as err:
-            logging.error('Data transformation error\n%s', str(err), exc_info=True)
-            sys.exit(1)
+    num = 0
+    for num, data_chunk in enumerate(data_f.get_data_chunk(config.URL)):
+        data_chunk = data_op.transform_data(data_chunk)
 
-        tasks.perform_task_1(data_chunk, config.T1_COL_NAME, task_1_output)
-        tasks.perform_task_2(data_chunk, task_2_output)
-        tasks.perform_task_3(data_chunk, task_3_output)
+        chunk_result_t1 = tasks.perform_task_1.delay(data_chunk, task_1_res)
+        chunk_result_t2 = tasks.perform_task_2.delay(data_chunk)
+        chunk_result_t3 = tasks.perform_task_3.delay(data_chunk)
 
-    task_1_a, task_1_b, task_1_c = data_op.formatted_task_1_results(
-        task_1_output, config.T1_COUNT_OF_TOP_HOTTEST_DAYS
-    )
+        task_1_res = chunk_result_t1.get()
+        task_2_res.extend(chunk_result_t2.get())
+        task_3_res.extend(chunk_result_t3.get())
 
-    logging.info('starting save operation')
-    file_op.save_task_1_to_disk(
-        task_1_a, task_1_b, task_1_c,
-        config.T1_COUNT_OF_TOP_HOTTEST_DAYS,
-        config.OUTPUT_DIR, config.T1_FILE_NAME
-    )
+        if num > 0 and num % config.SAVE_CKPT_EVERY == 0:
+            # save the results so far as checkpoints
+            # for task1, retain the last key-value pair, as this can be
+            # useful for the next chunk
+            last_key = list(task_1_res.keys())[-1]
+            last_val = task_1_res[last_key]
+            file_op.save_checkpoints(task_1_res, task_2_res, task_3_res, num)
+            task_1_res = {last_key: last_val}
+            task_2_res = []
+            task_3_res = []
 
-    file_op.save_task_2_to_disk(
-        task_2_output, config.OUTPUT_DIR, config.T2_FILE_NAME
-    )
+    if task_1_res or task_2_res or task_3_res:
+        file_op.save_checkpoints(task_1_res, task_2_res, task_3_res, num+1)
+        task_1_res = task_2_res = task_3_res = None
 
-    file_op.save_task_3_to_disk(
-        task_3_output, config.OUTPUT_DIR, config.T3_FILE_NAME
-    )
+    file_op.compile_checkpoints_to_generate_output()
 
-    logging.info('task completed')
 
 if __name__ == '__main__':
-
     parser = argparse.ArgumentParser()
-
-    # for running tests locally
-    parser.add_argument(
-        '--run_tests',
-        action='store_true',
-        help='Runs unit tests in the tests directory'
-    )
+    parser.add_argument('--url', help='URL to be used in the script')
+    parser.add_argument('--output_dir', help='Path of output directory')
+    parser.add_argument('--t1_file_name', help='Name of T1 output file')
+    parser.add_argument('--t2_file_name', help='Name of T2 output file')
+    parser.add_argument('--t3_file_name', help='Name of T3 output file')
+    parser.add_argument('--chunk_size', help='Chunk size for download')
+    parser.add_argument('--ckpt_freq', help='Frequency of saving checkpoint')
+    parser.add_argument('--log_level', help='Logging level')
+    parser.add_argument('--run_tests', action='store_true',
+        help='Runs unit tests on default settings, ignores any other flag')
 
     args = parser.parse_args()
 
@@ -121,4 +125,20 @@ if __name__ == '__main__':
         runner = unittest.TextTestRunner()
         runner.run(suite)
     else:
+        if args.url:
+            config.URL = args.url
+        if args.output_dir:
+            config.OUTPUT_DIR = args.output_dir
+        if args.t1_file_name:
+            config.T1_FILE_NAME = args.t1_file_name
+        if args.t2_file_name:
+            config.T2_FILE_NAME = args.t2_file_name
+        if args.t3_file_name:
+            config.T3_FILE_NAME = args.t3_file_name
+        if args.chunk_size:
+            config.CHUNK_SIZE = args.chunk_size
+        if args.ckpt_freq:
+            config.SAVE_CKPT_EVERY = args.ckpt_freq
+        if args.log_level:
+            config.LOGGING_LEVEL = args.log_level
         main()

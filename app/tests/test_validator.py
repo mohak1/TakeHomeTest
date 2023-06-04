@@ -1,13 +1,14 @@
 """This file contains unit tests for functions in `validator.py`"""
-import datetime
 import sys
 import unittest
 
-sys.path.append('./app')
+sys.path.append('.')
 
-import config
-import custom_exceptions as ce
-import validator
+# pylint: disable=wrong-import-position
+
+from app import config
+from app import custom_exceptions as ce
+from app import validator
 
 # pylint: disable=missing-class-docstring
 # pylint: disable=missing-function-docstring
@@ -16,15 +17,15 @@ class TestValidator(unittest.TestCase):
 
     def test_check_task_1_dict_format(self):
         valid_inp = {
-            '01/06/2006': {'temp': 17.2, 'time': datetime.time(15, 0)},
-            '01/07/2006': {'temp': 16.0, 'time': datetime.time(8, 50)},
+            '01/06/2006': {'temp': 17.2, 'time': '15:00:00'},
+            '01/07/2006': {'temp': 16.0, 'time': '08:50:00'},
         }
         invalid_inp_1 = []
-        invalid_inp_2 = {1: {'temp': 17.2, 'time': datetime.time(15, 0)}}
+        invalid_inp_2 = {1: {'temp': 17.2, 'time': '15:00:00'}}
         invalid_inp_3 = {'01/06/2006': [1,2,3]}
-        invalid_inp_4 = {'01/06/2006': {'a': 17.2, 'b': datetime.time(15, 0)}}
-        invalid_inp_5 = {1: {'temp': 'abc', 'time': datetime.time(15, 0)}}
-        invalid_inp_6 = {1: {'temp': 17.2, 'time': '15:00'}}
+        invalid_inp_4 = {'01/06/2006': {'a': 17.2, 'b': '15:00:00'}}
+        invalid_inp_5 = {'1': {'temp': 'abc', 'time': '15:00:00'}}
+        invalid_inp_6 = {'1': {'temp': 17.2, 'time': '15:00'}}
 
         test_cases = [
             # case: input has expected format
@@ -45,7 +46,7 @@ class TestValidator(unittest.TestCase):
             # case: invalid format: value of key 'temp' is not a number
             (invalid_inp_5, ce.InvalidFormatError),
 
-            # case: invalid format: value of key 'time' is not datetime obj
+            # case: invalid format: value of key 'time' is not as expected
             (invalid_inp_6, ce.InvalidFormatError),
 
         ]
@@ -56,7 +57,6 @@ class TestValidator(unittest.TestCase):
                 else:
                     with self.assertRaises(expected):
                         validator.check_task_1_dict_format(cols)
-        self.assertEqual(True, True)
 
     def test_check_for_expected_columns(self):
         expected_cols = config.EXPECTED_COL_NAMES

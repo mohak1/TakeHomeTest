@@ -4,10 +4,13 @@ import datetime
 import sys
 import unittest
 
-sys.path.append('./app')
+sys.path.append('.')
+
+# pylint: disable=wrong-import-position
 
 import pandas as pd
-import tasks
+
+from app import tasks
 
 # pylint: disable=missing-class-docstring
 # pylint: disable=missing-function-docstring
@@ -37,7 +40,7 @@ class TestTasks(unittest.TestCase):
             '03/06/2006': {'time': datetime.time(10, 20), 'temp': 18.4},
             '04/06/2006': {'time': datetime.time(10, 50), 'temp': 18.4}
         }
-        tasks.perform_task_1(input_data, 'Outside Temperature', output)
+        tasks.perform_task_1(input_data, output)
         self.assertEqual(output, expected)
 
     def test_perform_task_2(self):
@@ -56,7 +59,6 @@ class TestTasks(unittest.TestCase):
                 ['12/06/2006',datetime.time(10,50),18.4,18.6,18.3]
             ]
         )
-        output = []
         expected = [
             ('01/06/2006', '09:20'),
             ('01/06/2006', '09:30'),
@@ -64,7 +66,7 @@ class TestTasks(unittest.TestCase):
             ('03/06/2006', '10:20'),
             ('09/06/2006', '10:30')
         ]
-        tasks.perform_task_2(input_data, output)
+        output = tasks.perform_task_2(input_data)
         self.assertEqual(output, expected)
 
     def test_perform_task_3(self):
@@ -83,7 +85,6 @@ class TestTasks(unittest.TestCase):
                 ['12/06/2006',datetime.time(10,50),18.4,18.6,18.3]
             ]
         )
-        output = []
         expected = [
             ('01/07/2006', '09:10', '23.671875'),
             ('01/07/2006', '09:20', '25.078125'),
@@ -94,7 +95,7 @@ class TestTasks(unittest.TestCase):
             ('09/07/2006', '10:30', '25.068493150684933'),
             ('09/07/2006', '10:40', '24.931506849315067')
         ]
-        tasks.perform_task_3(input_data, output)
+        output = tasks.perform_task_3(input_data)
         self.assertEqual(output, expected)
 
     def test_get_avg_time(self):
@@ -106,10 +107,10 @@ class TestTasks(unittest.TestCase):
 
     def test_avg_time_of_hottest_daily_temp(self):
         input_data = {
-            '31/05/2006': {'time': datetime.time(14, 40), 'temp': 15.5},
-            '01/06/2006': {'time': datetime.time(15, 0), 'temp': 17.2},
-            '02/06/2006': {'time': datetime.time(13, 20), 'temp': 17.7},
-            '03/06/2006': {'time': datetime.time(14, 50), 'temp': 19.6},
+            '31/05/2006': {'time': '14:40:00', 'temp': 15.5},
+            '01/06/2006': {'time': '15:00:00', 'temp': 17.2},
+            '02/06/2006': {'time': '13:20:00', 'temp': 17.7},
+            '03/06/2006': {'time': '14:50:00', 'temp': 19.6},
         }
         expected = [('05/2006', '14:40'), ('06/2006', '14:30')]
         output = tasks.avg_time_of_hottest_daily_temp(input_data)
@@ -117,10 +118,10 @@ class TestTasks(unittest.TestCase):
 
     def test_hottest_time_with_hightest_freq(self):
         input_data = {
-            '31/05/2006': {'time': datetime.time(14, 40), 'temp': 15.5},
-            '01/06/2006': {'time': datetime.time(15, 0), 'temp': 17.2},
-            '02/06/2006': {'time': datetime.time(13, 20), 'temp': 17.7},
-            '03/06/2006': {'time': datetime.time(14, 50), 'temp': 19.6},
+            '31/05/2006': {'time': '14:40:00', 'temp': 15.5},
+            '01/06/2006': {'time': '15:00:00', 'temp': 17.2},
+            '02/06/2006': {'time': '13:20:00', 'temp': 17.7},
+            '03/06/2006': {'time': '14:50:00', 'temp': 19.6},
         }
         expected = '14:40'
         output = tasks.hottest_time_with_hightest_freq(input_data)

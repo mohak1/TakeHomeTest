@@ -4,12 +4,26 @@ import datetime
 import typing as ty
 from collections import defaultdict
 
-import config
+import celery
 import pandas as pd
 from dateutil.relativedelta import relativedelta
 
+from app import config
+from app import data_operations as data_op
+from app import decorators
 
-def perform_task_1(data: pd.DataFrame, col_name, result: ty.Dict) -> None:
+celery_app = celery.Celery(
+    'tasks',
+    broker='amqp://guest:guest@localhost:5672//',
+    worker_pool='threads',
+    backend='rpc://'
+)
+
+# usage: `celery -A app.tasks worker --loglevel=info`
+
+@celery_app.task
+@decorators.log_method
+def perform_task_1(data: ty.Dict, result: ty.Dict) -> ty.Dict:
     """
     Task 1 consists of the following prompts:
         a. Compute the average time of hottest daily temperature (over month)
@@ -22,27 +36,35 @@ def perform_task_1(data: pd.DataFrame, col_name, result: ty.Dict) -> None:
     For this information, we can look at one date at a time and store
     the highest temperature and the time of highest temperature for that
     date.
-    
+
     This function collects the highest temperature and time of highest
     temperature for each date and stores it in the `result` dict.
+    The `result` dict is passed as a parameter which contains the result
+    of task_1 on pervious chunks. The task is performed in the current
+    data chunk and the result is updated in the dict. This dict is
+    returned by the function so that the tasks can be performed using a
+    distributed task queue like Celery
 
     Args:
-        data (DataFrame): The dataframe containing CSV data
-        col_name (str): Column name on which the task 1 is to be performed
-        result (dict): Variable for keeping track of the information
+        data (dict): The dict containing CSV data
+        result (dict): Contains the result of task1 on previous chunks
 
-    The `result` dict has date string as its key and a dictionary of
-    type {'temp': float, 'time': datetime} as value
-    >>> Example:
+    Returns:
+        result (dict): `result` dict from args updated with the output
+            of task1 on current data chunk
+
+    >>> Example value of `result`:
     {
-        '01/06/2006': {'temp': 17.2, 'time': datetime.time(15, 0)},
-        '01/07/2006': {'temp': 16.0, 'time': datetime.time(8, 50)},
+        '01/06/2006': {'temp': 17.2, 'time': '15:00:00'},
+        '01/07/2006': {'temp': 16.0, 'time': '08:50:00'},
     }
     """
 
+    data = pd.DataFrame(data)
+
     # gather all unique dates
     unique_dates = data['Date'].unique()
-
+    col_name = config.T1_COL_NAME
     # for each date, get the max value for `col_name` and the its time
     for date in unique_dates:
         temp_and_time_on_date = data.loc[
@@ -60,8 +82,11 @@ def perform_task_1(data: pd.DataFrame, col_name, result: ty.Dict) -> None:
                 result[date]['time'] = max_temp_time
         else:
             result[date] = {'time':max_temp_time, 'temp':max_temp_val}
+    return result
 
-def perform_task_2(data: pd.DataFrame, result: ty.List) -> None:
+@celery_app.task
+@decorators.log_method
+def perform_task_2(data: ty.Dict) -> ty.List[ty.Tuple]:
     """
     Collects all the Dates and Times where the “Hi Temperature” value
     is in range [21.3, 23.3] degrees (both inclusive) or the
@@ -72,10 +97,28 @@ def perform_task_2(data: pd.DataFrame, result: ty.List) -> None:
     and their respective temperature ranges are read from `config.py`
     The date range (i.e. first 9 days of June) is also read from
     `config.py`
+
+    Args:
+        data (dict): The dict containing CSV data
+
+    Returns:
+        result (list): contains (date, time) tuples
+
+    >>> Example value of `result`:
+    [
+        ('01/06/2006', '15:00'),
+        ('01/07/2006', '08:50'),
+    ]
     """
+
+    result = []
+    data = pd.DataFrame(data)
 
     # convert to date obj to easily compare date ranges
     data['date_obj'] = pd.to_datetime(data['Date'], format='%d/%m/%Y')
+
+    # convert to time column to datetime
+    data_op.convert_time_col_to_datetime(data, format_='%H:%M:%S')
 
     # gather rows in this data chunk that belong to task 2 date ranges
     rows_in_date_range = data[
@@ -93,8 +136,11 @@ def perform_task_2(data: pd.DataFrame, result: ty.List) -> None:
         # store the Date and Time value for the rows in the value range
         for _, row in rows_in_temp_range.iterrows():
             result.append((row['Date'], row['Time'].strftime('%H:%M')))
+    return result
 
-def perform_task_3(data: pd.DataFrame, result: ty.List):
+@celery_app.task
+@decorators.log_method
+def perform_task_3(data: ty.Dict) -> ty.List[ty.Tuple]:
     """
     Forecasts “Outside Temperature” for the first 9 days of the
     next month (i.e. July), assuming that:
@@ -133,9 +179,30 @@ def perform_task_3(data: pd.DataFrame, result: ty.List):
     This limitation can handled by collecting the values until all
     the time ranges of all days (from 1st to 9th June) have been
     collected and only then proceeding with the forecast operation.
+
+    Args:
+        data (dict): The dict containing CSV data
+
+    Returns:
+        result (list): contains (date, time, temperature) tuples
+
+    >>> Example value of `result`:
+    [
+        ('01/06/2006', '15:00', 10.2),
+        ('01/07/2006', '08:50', 15.8),
+    ]
     """
+
+    result = []
+    data = pd.DataFrame(data)
+
+    data_op.convert_date_col_to_datetime(data)
+
     # converting to date obj to easily compare date ranges
     data['date_obj'] = pd.to_datetime(data['Date'], format='%d/%m/%Y')
+
+    # convert to time column to datetime
+    data_op.convert_time_col_to_datetime(data, format_='%H:%M:%S')
 
     # date objects to easily slice the dataframe rows
     june_1st = datetime.datetime.strptime('01/06/2006', '%d/%m/%Y')
@@ -169,7 +236,9 @@ def perform_task_3(data: pd.DataFrame, result: ty.List):
                     str(july_forecast[ind])
                 )
             )
+    return result
 
+@decorators.log_method
 def get_avg_time(time1: datetime.time, time2: datetime.time) -> datetime.time:
     """
     Computes and returns the average time of two datetime.time objects
@@ -191,6 +260,7 @@ def get_avg_time(time1: datetime.time, time2: datetime.time) -> datetime.time:
 
     return datetime.time(avg_hours, avg_minutes)
 
+@decorators.log_method
 def avg_time_of_hottest_daily_temp(result: ty.Dict) -> ty.List[ty.Tuple]:
     """
     Loops over the elements of the input dictionary. For each
@@ -203,8 +273,8 @@ def avg_time_of_hottest_daily_temp(result: ty.Dict) -> ty.List[ty.Tuple]:
         dictionary of dictionaries where each element of the dictionary
         is of the format:
         {
-            '01/06/2006': {'temp': 17.2, 'time': datetime.time(15, 0)},
-            '01/07/2006': {'temp': 16.0, 'time': datetime.time(8, 50)},
+            '01/06/2006': {'temp': 17.2, 'time': '15:00:00'},
+            '01/07/2006': {'temp': 16.0, 'time': '08:50:00'},
         }
 
     Returns:
@@ -216,12 +286,15 @@ def avg_time_of_hottest_daily_temp(result: ty.Dict) -> ty.List[ty.Tuple]:
     avg_hottest_time = {}
     for key in result:
         mm_yyyy = key[3:] # key is '31/05/2006'
+        time_obj = datetime.datetime.strptime(
+            result[key]['time'], '%H:%M:%S'
+        )
         if mm_yyyy in avg_hottest_time:
             avg_hottest_time[mm_yyyy] = get_avg_time(
-                avg_hottest_time[mm_yyyy], result[key]['time']
+                avg_hottest_time[mm_yyyy], time_obj
             )
         else:
-            avg_hottest_time[mm_yyyy] = result[key]['time']
+            avg_hottest_time[mm_yyyy] = time_obj
 
     # convert the dict to list of tuples and convert time to string
     values_as_list = [
@@ -229,6 +302,7 @@ def avg_time_of_hottest_daily_temp(result: ty.Dict) -> ty.List[ty.Tuple]:
     ]
     return values_as_list
 
+@decorators.log_method
 def hottest_time_with_hightest_freq(result: ty.Dict) -> str:
     """
     Loops over the elements of the input dictionary. Counts the
@@ -243,8 +317,8 @@ def hottest_time_with_hightest_freq(result: ty.Dict) -> str:
         dictionary of dictionaries where each element of the dictionary
         is of the format:
         {
-            '01/06/2006': {'temp': 17.2, 'time': datetime.time(15, 0)},
-            '01/07/2006': {'temp': 16.0, 'time': datetime.time(8, 50)},
+            '01/06/2006': {'temp': 17.2, 'time': '15:00:00'},
+            '01/07/2006': {'temp': 16.0, 'time': '08:50:00'},
         }
 
     Returns:
@@ -252,10 +326,10 @@ def hottest_time_with_hightest_freq(result: ty.Dict) -> str:
     """
     freq_count = defaultdict(int)
 
-    # count the frequency of each 'time' object
+    # count the frequency of each 'time' value
     for ele in result:
-        time_obj = result[ele]['time']
-        freq_count[time_obj] += 1
+        time = result[ele]['time']
+        freq_count[time] += 1
 
     max_freq = 0
     time_with_max_freq = None
@@ -266,9 +340,10 @@ def hottest_time_with_hightest_freq(result: ty.Dict) -> str:
             max_freq = freq_count[time]
             time_with_max_freq = time
 
-    time_val = time_with_max_freq.strftime('%H:%M')
+    time_val = time_with_max_freq[0:5]
     return time_val
 
+@decorators.log_method
 def top_hottest_times(result: ty.Dict, count: int) -> ty.List[ty.Tuple]:
     """
     Sorts the `result` dictionary by both 'temp' and date (key).
@@ -280,12 +355,12 @@ def top_hottest_times(result: ty.Dict, count: int) -> ty.List[ty.Tuple]:
     converted to string then returned.
 
     Args:
-        result (dict): dictionary with format of task 1 output, i.e. a 
+        result (dict): dictionary with format of task 1 output, i.e. a
         dictionary of dictionaries where each element of the dictionary
         is of the format:
         {
-            '01/06/2006': {'temp': 17.2, 'time': datetime.time(15, 0)},
-            '01/07/2006': {'temp': 16.0, 'time': datetime.time(8, 50)},
+            '01/06/2006': {'temp': 17.2, 'time': '15:00:00'},
+            '01/07/2006': {'temp': 16.0, 'time': '08:50:00'},
         }
 
         top_count (int): the number of top values to return
